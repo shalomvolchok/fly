@@ -1,15 +1,8 @@
-import { format } from 'util'
-
 export const logger = {
   info(...args) {
-    nodeLog('info', format(...args))
+    flyLog('info', ...args)
   },
   debug(...args) {
-    nodeLog('debug', format(...args))
+    flyLog('debug', ...args)
   }
-}
-
-function nodeLog(lvl, message) {
-  if (global._log)
-    global._log.apply(undefined, [lvl, `(fly) ${message}`]);
 }

@@ -29,6 +29,9 @@ import registerSession from './middleware/session'
 
 const mwToRegister = [registerFlyBackend, registerFlyEcho, registerFlyRoutes, registerForceSSL, registerGoogleAnalytics, registerSession]
 
+import { transferrableArgs } from './utils/args'
+import { setupSourceMapSupport } from './utils/error'
+
 import './local'
 
 global.middleware = {}
@@ -47,6 +50,10 @@ global.bootstrap = function bootstrap() {
 	delete global.bootstrap
 
 	global.console = consoleInit(ivm)
+
+	global.flyLog = function flyLog(lvl, ...args) {
+		_log.apply(undefined, [lvl].concat(transferrableArgs(ivm, args)));
+	}
 
 	timersInit(ivm)
 
@@ -94,5 +101,6 @@ global.bootstrap = function bootstrap() {
 	// load all middleware
 	for (const mwReg of mwToRegister)
 		mwReg(ivm, dispatch)
-
 }
+
+global.sourceMaps = {}

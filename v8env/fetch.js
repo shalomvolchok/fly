@@ -1,5 +1,6 @@
 import { logger } from './logger'
-import { transferInto } from './utils/buffer'
+import { bufferTransferInto } from './utils/buffer'
+import { errorTransferFrom } from './utils/error'
 
 /**
  * Starts the process of fetching a network request.
@@ -22,11 +23,9 @@ export default function fetchInit(ivm, dispatch) {
 				method: req.method,
 				headers: req.headers && req.headers.toJSON() || {},
 			}
-			console.log("INIT:", init)
 			return await _applyFetch(url, init, await req.arrayBuffer())
 
 		} catch (err) {
-			logger.debug("err applying nativeFetch", err.toString())
 			throw err
 		}
 	};
@@ -38,11 +37,10 @@ export default function fetchInit(ivm, dispatch) {
 				"fetch",
 				url,
 				new ivm.ExternalCopy(init).copyInto(),
-				transferInto(ivm, body),
+				bufferTransferInto(ivm, body),
 				new ivm.Reference(function (err, nodeRes, nodeBody, proxied) {
 					if (err != null) {
-						logger.debug("err :(", err)
-						reject(err)
+						reject(errorTransferFrom(err))
 						return
 					}
 					resolve(new Response(nodeBody, nodeRes.copy(), proxied))

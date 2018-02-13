@@ -1,7 +1,7 @@
 import { addEventListener } from '../events'
 
-export function setupLocalLogging(ivm, nodeLog) {
+export function setupLocalLogging(ivm) {
   addEventListener('log', (event) => {
-    nodeLog.apply(null, [event.log.level, event.log.message])
+    flyLog.apply(null, [event.log.level, ...event.log.args])
   })
 }

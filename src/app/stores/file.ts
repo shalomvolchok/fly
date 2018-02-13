@@ -17,6 +17,7 @@ export interface FileStoreOptions {
   config?: any
   secrets?: any
   uglify?: boolean
+  env?: string
 }
 
 export class FileStore implements AppStore {
@@ -42,7 +43,7 @@ export class FileStore implements AppStore {
       source_hash: "",
       config: {},
       secrets: {},
-    }, getLocalConfig(cwd), { secrets: getLocalSecrets(cwd) })
+    }, getLocalConfig(cwd, options.env), { secrets: getLocalSecrets(cwd) })
 
     if (this.options.config)
       this.releaseInfo.config = this.options.config
@@ -91,12 +92,13 @@ export class FileStore implements AppStore {
       return
     }
 
-    buildApp(cwd, { watch: true, uglify: this.options.uglify }, (err: Error, code: string, hash: string) => {
+    buildApp(cwd, { watch: true, uglify: this.options.uglify }, (err: Error, code: string, hash: string, sourceMap: string) => {
       if (err)
         return console.error(err)
 
       this.releaseInfo.source = code
       this.releaseInfo.source_hash = hash
+      this.releaseInfo.source_map = sourceMap
     })
   }
 

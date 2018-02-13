@@ -8,20 +8,20 @@ export default function consoleInit() {
 			Console.info(...args)
 		},
 		info(...args) {
-			dispatchEvent(new LogEvent('log', { level: 'info', message: format(...args), timestamp: new Date }))
+			dispatchEvent(new LogEvent('log', { level: 'info', args: [format(...args)], timestamp: new Date }))
 		},
 		assert(assertion, ...args) {
 			if (!assertion)
 				Console.info(...args)
 		},
 		error(...args) {
-			dispatchEvent(new LogEvent('log', { level: 'error', message: format(...args), timestamp: new Date }))
+			dispatchEvent(new LogEvent('log', { level: 'error', args: [format(...args)], timestamp: new Date }))
 		},
 		exception(...args) {
 			Console.error(...args)
 		},
 		warn(...args) {
-			dispatchEvent(new LogEvent('log', { level: 'warn', message: format(...args), timestamp: new Date }))
+			dispatchEvent(new LogEvent('log', { level: 'warn', args: [format(...args)], timestamp: new Date }))
 		},
 		trace() {
 			let stack = new Error().stack.match(/[^\r\n]+/g)
@@ -30,7 +30,7 @@ export default function consoleInit() {
 
 		// off-spec
 		debug(...args) {
-			dispatchEvent(new LogEvent('log', { level: 'debug', message: format(...args), timestamp: new Date }))
+			dispatchEvent(new LogEvent('log', { level: 'debug', args: [format(...args)], timestamp: new Date }))
 		},
 
 		// unimplemented

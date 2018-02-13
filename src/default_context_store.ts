@@ -35,12 +35,7 @@ export class DefaultContextStore implements ContextStore {
     const ctx = await createContext(config, iso, { inspector: !!this.options.inspect })
     t2.end()
 
-    t2 = t.start("compile")
-    const script = await iso.compileScript(app.source, { filename: `bundle-${app.sourceHash}.js` })
-    t2.end()
-    t2 = t.start("prerun")
-    await script.run(ctx.ctx)
-    t2.end()
+    await ctx.runApp(app, t)
     return ctx
   }
 

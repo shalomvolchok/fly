@@ -1,9 +1,10 @@
 import { logger } from './logger'
 import { EventEmitter2 as EventEmitter } from 'eventemitter2'
-import { transferInto } from './utils/buffer'
-import { bodyUsedError } from './body'
+import { bufferTransferInto } from './utils/buffer'
+import { errorTransferInto } from './utils/error'
+import { errBodyUsed } from './body'
 
-const invalidResponseType = new Error(`Invalid response type for 'fetch' event. Expecting a straight Response, a function returning a Promise<Response> or a Response.`)
+const invalidResponseType = `Invalid response type for 'fetch' event. Expecting a straight Response, a function returning a Promise<Response> or a Response.`
 
 /**
  * The fetch event fires when your app receives an HTTP request
@@ -45,14 +46,14 @@ export class FetchEvent {
 				ret.then((res) => {
 					if (res instanceof Response)
 						return this.callback(null, res)
-					this.callback(invalidResponseType)
+					this.callback(new TypeError(invalidResponseType))
 				}).catch((err) => {
 					this.callback(err)
 				})
 			} else if (ret instanceof Response) {
 				this.callback(null, fn)
 			} else {
-				this.callback(invalidResponseType)
+				this.callback(new TypeError(invalidResponseType))
 			}
 		} catch (err) {
 			this.callback(err)
@@ -81,10 +82,9 @@ export function fireEventInit(ivm) {
 					throw new Error(`unknown event listener: ${name}`)
 			}
 		} catch (err) {
-			logger.debug(err.message, err.stack)
 			let cb = args[args.length - 1] // should be the last arg
 			if (cb instanceof ivm.Reference)
-				cb.apply(undefined, [err.toString()])
+				cb.apply(undefined, [new ivm.ExternalCopy(errorTransferInto(err)).copyInto()])
 		}
 	}
 }
@@ -96,20 +96,19 @@ function fireFetchEvent(ivm, url, nodeReq, reqProxy, nodeBody, callback) {
 	let fetchEvent = new FetchEvent('fetch', { request: req }, async function (err, res) {
 		logger.debug("request event callback called", typeof err, typeof res, res instanceof Response)
 
-		if (err){
-			console.log(err, err.stack)
-			return callback.apply(null, [err.toString()])
+		if (err)
+			return callback.apply(null, [new ivm.ExternalCopy(errorTransferInto(err)).copyInto()])
+
+		if (res.bodyUsed) {
+			return callback.apply(null, [new ivm.ExternalCopy(new Error(errBodyUsed)).copyInto()])
 		}
 
-		if(res.bodyUsed){
-			return callback.apply(null, [bodyUsedError.toString()])
-		}
 
 		let body = null
-		if(!res._proxy){
+		if (!res._proxy) {
 			body = await res.arrayBuffer()
 			logger.debug("Got arrayBuffer from response:", body.byteLength)
-		}else{
+		} else {
 			logger.debug("Response is a proxy")
 		}
 
@@ -119,7 +118,7 @@ function fireFetchEvent(ivm, url, nodeReq, reqProxy, nodeBody, callback) {
 				status: res.status,
 				bodyUsed: res.bodyUsed,
 			}).copyInto(),
-			transferInto(ivm, body),
+			bufferTransferInto(ivm, body),
 			res._proxy // pass back the proxy
 		])
 	})
@@ -153,17 +152,17 @@ function fireFetchEndEvent(ivm, url, nodeReq, nodeRes, err, done) {
 }
 
 class LogMessage {
-	constructor(level, message, timestamp = new Date) {
+	constructor(level, ...args) {
+		this.timestamp = new Date
 		this.level = level
-		this.message = message
-		this.timestamp = timestamp
+		this.args = args
 	}
 }
 
 export class LogEvent {
 	constructor(type = "log", init = {}) {
 		this.type = type
-		this.log = new LogMessage(init.level, init.message, init.timestamp || new Date)
+		this.log = new LogMessage(init.level, ...init.args)
 	}
 }
 

@@ -53,6 +53,9 @@ export async function startServer(cwd: string, options?: ServerOptions): Promise
   })
 
   http.on('error', (e) => { throw e })
+  server.on("error", (err) => {
+    // swallow
+  })
 
   await new Promise((resolve, reject) => {
     http.listen(port, () => resolve())

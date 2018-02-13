@@ -132,7 +132,7 @@ describe('Server', () => {
     it('returns an error', async () => {
       let res = await axios.get("http://127.0.0.1:3333/", { headers: { host: "test" } })
       expect(res.status).to.equal(500)
-      expect(res.data).to.equal("Too much recursion")
+      expect(res.data).to.equal("Error: Too much recursion")
     })
   })
 
@@ -217,6 +217,18 @@ describe('Server', () => {
       let res = await axios.post("http://127.0.0.1:3333/", "hello", { headers: { host: "test" } })
       expect(res.status).to.equal(200);
       expect(res.data).to.equal(`res1: hellohello\nres2: hellohello`)
+    })
+  })
+
+  describe('errors', () => {
+    before(async function () {
+      this.server = await startServer("error.js")
+    })
+    after(function (done) { this.server.close(done) })
+    it('has the source mapped stack', async () => {
+      let res = await axios.get("http://127.0.0.1:3333/", { headers: { host: "test" } })
+      expect(res.status).to.equal(200)
+      expect(res.data).to.include("v8env/events.js")
     })
   })
 })

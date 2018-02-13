@@ -32,10 +32,9 @@ export function getLocalSecrets(cwd = process.cwd()) {
   return secrets
 }
 
-export function getLocalConfig(
-  cwd = process.cwd(),
-  env = process.env.FLY_ENV || process.env.NODE_ENV || 'development'
-) {
+export function getLocalConfig(cwd?: string, env?: string) {
+  cwd = cwd || process.cwd()
+  env = env || process.env.FLY_ENV || process.env.NODE_ENV || 'development'
   const localConfigPath = path.join(cwd, ".fly.yml")
   let config: any = {};
   if (fs.existsSync(localConfigPath))

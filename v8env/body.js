@@ -1,8 +1,10 @@
 import { ReadableStream } from 'web-streams-polyfill'
 import { logger } from './logger'
 
-export const bodyUsedError = new Error("Body already used, try using tee() on the stream to output to multiple destinations")
-const unsupportedBodyTypeError = new Error("Body type is unsupported, please use a ReadableStream, ArrayBuffer or a string")
+import { errorTransferFrom } from './utils/error'
+
+export const errBodyUsed = "Body already used, try using tee() on the stream to output to multiple destinations"
+const errUnsupportedBodyType = "Body type is unsupported, please use a ReadableStream, ArrayBuffer or a string"
 /**
  * This provides methods for handling body streams. It's not meant to be used directly.
  * @name Body
@@ -52,7 +54,7 @@ export default function bodyInit(ivm) {
 		 */
 		this.text = async () => {
 			if (this.bodyUsed)
-				throw bodyUsedError
+				throw new Error(errBodyUsed)
 			const arr = await bufferFromStream(this.body.getReader())
 			const text = new TextDecoder('utf-8').decode(arr)
 			return text
@@ -66,7 +68,7 @@ export default function bodyInit(ivm) {
 		 */
 		this.arrayBuffer = async () => {
 			if (this.bodyUsed)
-				throw bodyUsedError
+				throw new Error(errBodyUsed)
 			const arr = await bufferFromStream(this.body.getReader())
 			this.bodyUsed = true
 			return arr.buffer
@@ -94,7 +96,7 @@ export default function bodyInit(ivm) {
 			return streamFromString(_stream.toString())
 		}
 		logger.debug("make stream", typeof _stream, _stream.toString())
-		throw unsupportedBodyTypeError
+		throw new Error(errUnsupportedBodyType)
 	}
 
 	function bufferFromStream(stream) {
@@ -120,7 +122,7 @@ export default function bodyInit(ivm) {
 						return pump();
 					})
 					.catch((err) => {
-						logger.debug("error pumping", err.toString())
+						logger.debug("error pumping", err)
 						reject(err)
 					});
 			})()
@@ -138,7 +140,7 @@ export default function bodyInit(ivm) {
 							controller.close()
 						}
 					} else if (name === "error") {
-						controller.error(new Error(args[0]))
+						controller.error(errorTransferFrom(args[0]))
 					} else if (name === "data") {
 						controller.enqueue(args[0])
 					} else

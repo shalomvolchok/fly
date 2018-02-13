@@ -1,7 +1,7 @@
 import { logger } from './logger'
 import CookieJar from './cookie_jar'
 
-import { bodyUsedError } from './body'
+import { errBodyUsed } from './body'
 
 export default function requestInit(ivm) {
 	function byteUpperCase(s) {
@@ -100,7 +100,6 @@ export default function requestInit(ivm) {
 			}
 
 			if ('body' in init) {
-				logger.debug("setting le body for request", typeof init.body, init.body instanceof FormData)
 				this._stream = init.body;
 			}
 
@@ -118,7 +117,7 @@ export default function requestInit(ivm) {
 
 		clone() {
 			if (this.bodyUsed)
-				throw bodyUsedError
+				throw new Error(errBodyUsed)
 			const [body1, body2] = this.body.tee()
 			const cloned = new Request(this.url, {
 				body: body2,

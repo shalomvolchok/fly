@@ -14,7 +14,7 @@ export function bufferToArrayBuffer(buffer: Buffer): ArrayBuffer {
   )
 }
 
-export function transferInto(buffer: Buffer | ArrayBuffer | null) {
+export function bufferTransferInto(buffer: Buffer | ArrayBuffer | null) {
   if (!buffer)
     return null
   if (buffer instanceof Buffer)

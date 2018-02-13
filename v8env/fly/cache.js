@@ -1,5 +1,6 @@
 import { logger } from '../logger'
-import { transferInto } from '../utils/buffer'
+import { bufferTransferInto } from '../utils/buffer'
+import { errorTransferFrom } from '../utils/error'
 
 /**
  * @namespace fly.cache
@@ -46,9 +47,9 @@ export default function flyCacheInit(ivm, dispatch) {
       if (size > 2 * 1024 * 1024) {
         return Promise.reject("Cache does not support values > 2MB")
       }
-      if(value instanceof ArrayBuffer){
+      if (value instanceof ArrayBuffer) {
         logger.debug("Transferring buffer:", key, value.byteLength)
-        value = transferInto(ivm, value)
+        value = bufferTransferInto(ivm, value)
       }
       return new Promise(function (resolve, reject) {
         dispatch.apply(null, [
@@ -58,7 +59,7 @@ export default function flyCacheInit(ivm, dispatch) {
           ttl,
           new ivm.Reference(function (err, ok) {
             if (err != null) {
-              reject(err)
+              reject(errorTransferFrom(err))
               return
             }
             resolve(ok)
@@ -83,7 +84,7 @@ export default function flyCacheInit(ivm, dispatch) {
           ttl,
           new ivm.Reference(function (err, value) {
             if (err != null) {
-              reject(err)
+              reject(errorTransferFrom(err))
               return
             }
             resolve(value)
@@ -101,10 +102,10 @@ export default function flyCacheInit(ivm, dispatch) {
         key,
         new ivm.Reference(function (err, value) {
           if (err != null) {
-            reject(err)
+            reject(errorTransferFrom(err))
             return
           }
-          if(value){
+          if (value) {
             logger.debug("cache got:", value.constructor.name, value.byteLength)
           }
           resolve(value)

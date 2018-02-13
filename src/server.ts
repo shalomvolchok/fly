@@ -19,7 +19,8 @@ import { DefaultContextStore } from './default_context_store';
 const proxiedHttp = require('findhit-proxywrap').proxy(http, { strict: false })
 const { version } = require('../package.json');
 
-import { bufferToStream, transferInto } from './utils/buffer'
+import { bufferToStream, bufferTransferInto } from './utils/buffer'
+import { errorTransferInto, errorTransferFrom } from './utils/error';
 
 const defaultFetchDispatchTimeout = 1000
 const defaultFetchEndTimeout = 5000
@@ -142,6 +143,7 @@ export class Server extends EventEmitter {
 		try {
 			app = await this.config.appStore.getAppByHostname(request.headers.host, tapp)
 		} catch (err) {
+			this.emit("runtimeError", err)
 			log.error("error getting app", err)
 			response.writeHead(500)
 			response.end()
@@ -169,7 +171,6 @@ export class Server extends EventEmitter {
 			startedAt: startedAt,
 			originalURL: fullURL,
 		}
-		this.emit('request', request)
 
 		try {
 
@@ -249,12 +250,15 @@ export class Server extends EventEmitter {
 								callback.apply(undefined, ["close"])
 							})
 							request.on("data", function (data: Buffer) {
-								callback.apply(undefined, ["data", transferInto(data)])
+								callback.apply(undefined, ["data", bufferTransferInto(data)])
+							})
+							request.on("error", function (err) {
+								callback.apply(undefined, ["error", errorTransferInto(err)])
 							})
 							request.resume()
 						})
 					}),
-					new ivm.Reference((err: any, res: any, resBody: ArrayBuffer, proxy?: ivm.Reference<http.IncomingMessage>) => {
+					new ivm.Reference((terr: any, res: any, resBody: ArrayBuffer, proxy?: ivm.Reference<http.IncomingMessage>) => {
 						if (cbCalled) {
 							return // this can't happen twice
 						}
@@ -262,10 +266,12 @@ export class Server extends EventEmitter {
 						t.end()
 						ctx.trace = t.parent
 
-						if (err) {
+						if (terr) {
+							const err = errorTransferFrom(terr)
+							this.emit("runtimeError", err)
 							log.error("error from fetch callback:", err)
 							response.writeHead(500)
-							response.end("Error: " + err)
+							response.end("An error occurred.")
 							// release ctx
 							if (this.config.contextStore)
 								this.config.contextStore.putContext(ctx)
@@ -279,6 +285,7 @@ export class Server extends EventEmitter {
 								response.setHeader(niceName, val)
 								finalHeaders[niceName] = val
 							} catch (err) {
+								this.emit("runtimeError", err)
 								log.error("error setting header", err)
 							}
 						}
@@ -336,10 +343,13 @@ export class Server extends EventEmitter {
 				], { timeout: this.options.fetchDispatchTimeout })
 			})
 
-		} catch (e) {
-			log.error("error...", e, e.stack)
-			response.statusCode = 500
-			response.end("Critical error.")
+		} catch (err) {
+			this.emit("runtimeError", err)
+			log.error("error...", err, err.stack)
+			if (!response.finished) {
+				response.statusCode = 500
+				response.end("Critical error.")
+			}
 		} finally {
 			trace.end()
 			this.emit('requestEnd', request, response, trace)
@@ -366,10 +376,7 @@ export class Server extends EventEmitter {
 function handleResponse(src: Readable, dst: Writable): Promise<void> {
 	return new Promise(function (resolve, reject) {
 		setImmediate(() => {
-			src.pipe(dst)
-				.on("finish", function () {
-					resolve()
-				}).on("error", reject)
+			src.pipe(dst).on("finish", resolve).on("error", reject)
 		})
 	})
 }

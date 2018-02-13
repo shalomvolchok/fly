@@ -6,15 +6,16 @@ import * as http from 'http'
 import * as https from 'https'
 import { URL, parse as parseURL, format as formatURL } from 'url'
 import { headersForWeb, fullURL } from '../utils/http'
-import { transferInto } from '../utils/buffer'
+import { bufferTransferInto } from '../utils/buffer'
 
 import { Trace } from '../trace'
+import { errorTransferInto } from '../utils/error';
 
 
 const fetchAgent = new http.Agent({ keepAlive: true });
 const fetchHttpsAgent = new https.Agent({ keepAlive: true, rejectUnauthorized: false })
 
-const wormholeRegex = /^(wormhole\.)/
+const errTooMuchRecursion = new Error("Too much recursion")
 
 registerBridge('fetch', fetchBridge)
 
@@ -29,7 +30,7 @@ export function fetchBridge(ctx: Context) {
     log.debug("fetch depth: ", depth)
     if (depth >= 3) {
       log.error("too much recursion: ", depth)
-      cb.apply(undefined, ["Too much recursion"])
+      cb.apply(undefined, [errorTransferInto(errTooMuchRecursion)])
       return
     }
 
@@ -79,22 +80,21 @@ export function fetchBridge(ctx: Context) {
               setImmediate(async () => {
                 res.on("close", function () {
                   t.end()
-                  callback.apply(undefined, ["close"])
+                  callback.apply(null, ["close"])
                 })
                 res.on("end", function () {
                   t.end()
-                  callback.apply(undefined, ["end"])
+                  callback.apply(null, ["end"])
                 })
                 res.on("error", function (err: Error) {
                   t.end()
-                  callback.apply(undefined, ["error", err.toString()])
+                  callback.apply(null, ["error", errorTransferInto(err)])
                 })
 
                 res.on("data", function (data: Buffer) {
-                  callback.apply(undefined, ["data", transferInto(data)])
+                  callback.apply(null, ["data", bufferTransferInto(data)])
                 })
                 res.resume()
-                //callback.apply(undefined, ["end"])
               })
             }),
             new ivm.Reference(res)
@@ -103,14 +103,14 @@ export function fetchBridge(ctx: Context) {
 
         req.on("error", function (err) {
           log.error("error requesting http resource", err)
-          cb.apply(undefined, [err.toString()])
+          cb.apply(undefined, [errorTransferInto(err)])
         })
 
         req.end(body && Buffer.from(body) || null)
       })
     } catch (err) {
       log.error("caught error", err)
-      cb.apply(undefined, [err.toString()])
+      cb.apply(undefined, [errorTransferInto(err)])
     }
 
     return

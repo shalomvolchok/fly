@@ -3,13 +3,14 @@ import { ivm } from '../'
 import * as http from 'http'
 
 import { registerBridge, Context } from './'
+import { errorTransferInto } from '../utils/error';
 
 registerBridge('parseFormData', function (ctx: Context) {
   return function (proxy: ivm.Reference<http.IncomingMessage>, cb: ivm.Reference<Function>) {
     let req = proxy.deref()
     let form = new multiparty.Form()
 
-    form.on("error", (err) => { cb.apply(null, ["error", err.toString()]) })
+    form.on("error", (err) => { cb.apply(null, ["error", errorTransferInto(err)]) })
     // Parts are emitted when parsing the form
     form.on('part', function (part: multiparty.Part) {
       // You *must* act on the part by reading it
@@ -24,7 +25,7 @@ registerBridge('parseFormData', function (ctx: Context) {
 
       part.on('error', (err) => {
         readDone = true
-        cb.apply(null, ["error", err.toString()])
+        cb.apply(null, ["error", errorTransferInto(err)])
       });
       part.on("end", () => { readDone = true })
       part.on("close", () => { readDone = true })

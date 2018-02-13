@@ -27,7 +27,7 @@ class Session {
 	}
 }
 
-const errMiddlewareNotPromise = new Error("Middleware did not return a promise")
+const errMiddlewareNotPromise = "Middleware did not return a promise"
 
 /**
  * Middleware functions must implement this signature.
@@ -119,9 +119,9 @@ export class MiddlewareChain {
 			let res = await this.buildNext(this.chain[0], this.currentPos)(req)
 			if (res instanceof Response)
 				return res
-			throw errMiddlewareNotPromise
+			throw new Error(errMiddlewareNotPromise)
 		} catch (err) {
-			logger.debug("error running middleware chain:", err.toString())
+			logger.debug("error running middleware chain:", err)
 			return new Response("Internal Server Error", {
 				status: 500
 			})
@@ -149,10 +149,9 @@ export class MiddlewareChain {
 			const res = mw.fn.call(mw, req, next)
 			if (res instanceof Promise)
 				return res
-			throw errMiddlewareNotPromise
+			throw new Error(errMiddlewareNotPromise)
 		} catch (err) {
-			logger.debug("error running middleware")
-			logger.debug(mw.type, err.toString())
+			logger.debug("error running middleware", err)
 			throw err
 		}
 	}

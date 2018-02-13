@@ -1,7 +1,7 @@
 let logs = []
 
 addEventListener('log', (event) => {
-  logs.push({ message: event.log.message, level: event.log.level })
+  logs.push({ message: event.log.args[0], level: event.log.level })
 })
 
 addEventListener('fetch', (event) => {
