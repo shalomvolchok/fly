@@ -56,67 +56,67 @@ export default class Headers implements Iterable<[ByteString, ByteString]> {
     }
   }
 
-  get(name: ByteString) {
-    name = name.toLowerCase();
-    for (var index = 0; index < this._headerList.length; ++index) {
-      if (this._headerList[index][0] === name)
-        return this._headerList[index][1];
-    }
-    return null;
+  get(name: ByteString): ByteString? {
+  name = name.toLowerCase();
+  for (var index = 0; index < this._headerList.length; ++index) {
+    if (this._headerList[index][0] === name)
+      return this._headerList[index][1];
   }
+  return null;
+}
 
-  getAll(name: ByteString): ByteString[] {
-    name = name.toLowerCase();
-    var sequence = [];
-    for (var index = 0; index < this._headerList.length; ++index) {
-      if (this._headerList[index][0] === name)
-        sequence.push(this._headerList[index][1]);
-    }
-    return sequence;
+getAll(name: ByteString): ByteString[] {
+  name = name.toLowerCase();
+  var sequence = [];
+  for (var index = 0; index < this._headerList.length; ++index) {
+    if (this._headerList[index][0] === name)
+      sequence.push(this._headerList[index][1]);
   }
+  return sequence;
+}
 
 
-  has(name: ByteString): boolean {
-    name = name.toLowerCase();
-    for (var index = 0; index < this._headerList.length; ++index) {
-      if (this._headerList[index][0] === name)
-        return true;
-    }
-    return false;
+has(name: ByteString): boolean {
+  name = name.toLowerCase();
+  for (var index = 0; index < this._headerList.length; ++index) {
+    if (this._headerList[index][0] === name)
+      return true;
   }
+  return false;
+}
 
-  set(name: ByteString, value: ByteString) {
-    name = name.toLowerCase();
-    for (var index = 0; index < this._headerList.length; ++index) {
-      if (this._headerList[index][0] === name) {
-        this._headerList[index++][1] = value;
-        while (index < this._headerList.length) {
-          if (this._headerList[index][0] === name)
-            this._headerList.splice(index, 1);
-          else
-            ++index;
-        }
-        return;
+set(name: ByteString, value: ByteString) {
+  name = name.toLowerCase();
+  for (var index = 0; index < this._headerList.length; ++index) {
+    if (this._headerList[index][0] === name) {
+      this._headerList[index++][1] = value;
+      while (index < this._headerList.length) {
+        if (this._headerList[index][0] === name)
+          this._headerList.splice(index, 1);
+        else
+          ++index;
       }
+      return;
     }
-    this._headerList.push([name, value]);
+  }
+  this._headerList.push([name, value]);
+}
+
+/**
+ * @returns {Object<string,string[]>}
+ */
+toJSON(): Object < ByteString, ByteString[] > {
+  const jsonHeaders: Object<ByteString, ByteString[]> = {}
+for (let h of this._headerList) {
+  if (h[0] === 'host') {
+    jsonHeaders[h[0]] = this.get(h[0])
+    continue
   }
 
-  /**
-   * @returns {Object<string,string[]>}
-   */
-  toJSON(): Object<ByteString, ByteString[]> {
-    const jsonHeaders: Object<ByteString, ByteString[]> = {}
-    for (let h of this._headerList) {
-      if (h[0] === 'host') {
-        jsonHeaders[h[0]] = this.get(h[0])
-        continue
-      }
-
-      logger.debug("setting", h[0], this.getAll(h[0]))
-      jsonHeaders[h[0]] = this.getAll(h[0])
-    }
-    return jsonHeaders
+  logger.debug("setting", h[0], this.getAll(h[0]))
+  jsonHeaders[h[0]] = this.getAll(h[0])
+}
+return jsonHeaders
   }
 }
 
