@@ -10,6 +10,30 @@ describe('Headers', () => {
     expect(hs).to.be.instanceof(Headers)
   })
 
+  it('can be filled with Object', () => {
+    headers = {
+      'Content-Type': 'text/xml',
+      'Breaking-Bad': [
+        '<3',
+        'yeah'
+      ]
+    }
+    const hs = new Headers(headers)
+    expect(hs.get('Content-Type')).to.equal('text/xml')
+    expect(hs.get('Breaking-Bad')).to.equal('<3, yeah')
+  })
+
+  it('can be filled with Array', () => {
+    headers = [
+      ['Content-Type', 'text/xml'],
+      ['Breaking-Bad', '<3'],
+      ['Breaking-Bad', 'yeah']
+    ]
+    const hs = new Headers(headers)
+    expect(hs.get('Content-Type')).to.equal('text/xml')
+    expect(hs.get('Breaking-Bad')).to.equal('<3, yeah')
+  })
+
   it('are iterable', () => {
     const hs = new Headers()
     hs.set('Content-Type', 'text/xml')
@@ -44,7 +68,7 @@ describe('Headers', () => {
     expect(hs.get('Server')).to.not.be.null
   })
 
-  it('can getAll/set/append params', () => {
+  it('can get/set/append params', () => {
     const hs = new Headers()
     hs.set('Vary', 'Current-Org-Id')
     hs.append('Vary', 'User-Logged-In')
@@ -52,15 +76,14 @@ describe('Headers', () => {
     hs.append('X-Cache', 'HIT')
     hs.set('X-Cache', 'REFRESH')
 
-    expect(hs.getAll('Vary')).to.eql(['Current-Org-Id', 'User-Logged-In'])
-    expect(hs.getAll('Server')).to.eql(['Fly.io'])
-    expect(hs.getAll('X-Cache')).to.eql(['REFRESH'])
+    expect(hs.get('Vary')).to.eql('Current-Org-Id, User-Logged-In')
+    expect(hs.get('Server')).to.eql('Fly.io')
+    expect(hs.get('X-Cache')).to.eql('REFRESH')
   })
 
   it('gracefully handle non-existant keys', () => {
     const hs = new Headers()
 
-    expect(hs.getAll('Bad-Header')).to.eql([])
     expect(hs.get('Bad-Header-2')).to.be.null
   })
 
