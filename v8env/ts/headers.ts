@@ -23,14 +23,14 @@ interface Headers {
 export interface Header { [s: string]: ByteString }
 export interface HeaderMulti { [s: string]: ByteString | ByteString[] }
 
-export type HeadersInit = [[ByteString, ByteString]] | Header
+export type HeadersInit = Array<[ByteString, ByteString]> | Header
 
 export default class Headers implements Iterable<[ByteString, ByteString] | null> {
   private counter = 0
-  private _headerList: [[ByteString, ByteString]]
+  private _headerList: Array<[ByteString, ByteString]>
 
   constructor(init: Headers | HeadersInit) {
-    this._headerList = new Array()
+    this._headerList = new Array<[ByteString, ByteString]>()
     if (init) {
       fill(this, init)
     }
