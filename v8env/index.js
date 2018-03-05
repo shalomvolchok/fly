@@ -11,7 +11,7 @@ import consoleInit from './console'
 import flyInit from './fly'
 
 import { URL, URLSearchParams } from 'universal-url-lite'
-import Headers from './headers.ts'
+import Headers from './ts/headers.ts'
 
 import fetchInit from './fetch'
 import bodyMixin from './ts/body_mixin.ts'

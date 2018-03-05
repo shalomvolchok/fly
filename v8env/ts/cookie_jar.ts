@@ -14,16 +14,16 @@ export default class CookieJar {
   constructor(parent: Request | Response) {
     this.parent = parent
     if (parent instanceof Request)
-      this.cookies = parseCookies(parent.headers.getAll("Cookie"))
+      this.cookies = parseCookies(parent.headers.get('Cookie'))
     else if (parent instanceof Response)
-      this.cookies = parseCookies(parent.headers.getAll("Set-Cookie"))
+      this.cookies = parseCookies(parent.headers.get('Set-Cookie'))
   }
 
 	/**
 	 * Gets a cookie by name
 	 * @param {String} name
 	 */
-  get(name) {
+  get(name: string) {
     return this.cookies.find((c) => c.name === name)
   }
 
@@ -43,9 +43,13 @@ export default class CookieJar {
   }
 }
 
-function parseCookies(rawCookies: string[]): Object[] {
+function parseCookies(rawCookies: string | null): Object[] {
   let cookies: Object[] = []
-  for (let c of rawCookies) {
+  if (rawCookies === null) {
+    return cookies
+  }
+
+  for (let c of rawCookies.split(',')) {
     cookies = cookies.concat(parseCookie(c))
   }
   return cookies
