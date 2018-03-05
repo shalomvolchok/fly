@@ -1,6 +1,6 @@
 import * as cookie from 'cookie'
 
-const cookieAttributeNames = ['Max-Age', 'Expires', 'HttpOnly', 'Secure', 'Path', 'SameSite', 'Domain']
+const cookieAttributeNames = ['maxAge', 'expires', 'httpOnly', 'secure', 'path', 'sameSite', 'domain']
 
 /**
  * A jar for storing delicious cookies.
@@ -9,14 +9,18 @@ const cookieAttributeNames = ['Max-Age', 'Expires', 'HttpOnly', 'Secure', 'Path'
  */
 export default class CookieJar {
   private parent: Request | Response
-  private cookies: any[]
+  private cookies: { [key: string]: string }[]
 
   constructor(parent: Request | Response) {
     this.parent = parent
-    if (parent instanceof Request)
+    if (parent instanceof Request) {
       this.cookies = parseCookies(parent.headers.get('Cookie'))
-    else if (parent instanceof Response)
+    }
+    else if (parent instanceof Response) {
       this.cookies = parseCookies(parent.headers.get('Set-Cookie'))
+    } else {
+      throw new TypeError('Expected parent to be instance of Request or Response.')
+    }
   }
 
 	/**
@@ -37,14 +41,14 @@ export default class CookieJar {
     const cookieStr = cookie.serialize(name, value, options)
     this.cookies = this.cookies.concat(parseCookie(cookieStr))
     if (this.parent instanceof Request)
-      this.parent.headers.append("Cookie", cookieStr)
+      this.parent.headers.append('Cookie', cookieStr)
     else if (this.parent instanceof Response)
-      this.parent.headers.append("Set-Cookie", cookieStr)
+      this.parent.headers.append('Set-Cookie', cookieStr)
   }
 }
 
-function parseCookies(rawCookies: string | null): Object[] {
-  let cookies: Object[] = []
+function parseCookies(rawCookies: string | null): { [key: string]: string }[] {
+  let cookies: { [key: string]: string }[] = []
   if (rawCookies === null) {
     return cookies
   }
@@ -55,16 +59,16 @@ function parseCookies(rawCookies: string | null): Object[] {
   return cookies
 }
 
-function parseCookie(cookieStr: string): Object[] {
-  let options = {}
+function parseCookie(cookieStr: string): { [key: string]: string }[] {
+  let options: { [s: string]: string } = {}
   let cookies = []
   let parsed = cookie.parse(cookieStr)
-  for (let k in parsed) {
-    if (cookieAttributeNames.indexOf(k) != -1) {
-      options[k] = parsed[k]
+  for (let attr in parsed) {
+    if (cookieAttributeNames.indexOf(attr) != -1) {
+      options[attr] = String(parsed[attr])
       continue
     }
-    cookies.push({ name: k, value: parsed[k] })
+    cookies.push({ name: attr, value: parsed[attr] })
   }
   return cookies.map((c) => Object.assign(c, options))
 }
