@@ -29,8 +29,11 @@ export default class Headers implements Iterable<[ByteString, ByteString] | null
   private counter = 0
   private _headerList: [[ByteString, ByteString]]
 
-  constructor() {
-    this._headerList = []
+  constructor(init: Headers | HeadersInit) {
+    this._headerList = new Array()
+    if (init) {
+      fill(this, init)
+    }
   }
 
   public [Symbol.iterator]() {
@@ -126,39 +129,23 @@ export default class Headers implements Iterable<[ByteString, ByteString] | null
   }
 }
 
-function fill(headers: Headers, init: Headers | [[ByteString, ByteString]] | Header) {
+function fill(headers: Headers, init: Headers | HeadersInit) {
   if (init instanceof Headers) {
-    init._headerList.forEach(function(header) {
-      headers.append(header[0], header[1]);
-    });
+    for (let header of init) {
+      if (header !== null) {
+        headers.append(header[0], header[1])
+      }
+    }
   } else if (Array.isArray(init)) {
     init.forEach(function(header) {
       if (!Array.isArray(header) || header.length !== 2) throw TypeError();
       headers.append(header[0], header[1]);
     });
   } else {
-    init = Object(init);
-    Object.keys(init)
-      .forEach(function(key) {
-        if (Array.isArray(init[key])) {
-          init[key].forEach(function(v) {
-            headers.append(key, v);
-          })
-        } else {
-          headers.append(key, init[key]);
-        }
-      });
+    for (let key in init) {
+      headers.append(key, init[key])
+    }
   }
-}
 
-/*
-export default function Headers(init) {
-  Object.defineProperty(this, "_headerList", {
-    enumerable: false,
-    value: []
-  })
-  if (init) {
-    fill(this, init)
-  }
+  return headers
 }
-*/
