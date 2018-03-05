@@ -1,6 +1,7 @@
 import { logger } from './logger.ts'
 import CookieJar from './cookie_jar.ts'
 import BodyMixin from './body_mixin.ts'
+import Headers from './body_mixin.ts'
 
 
 function byteUpperCase(s: string) {
@@ -17,7 +18,28 @@ function normalizeMethod(m: string) {
   return m;
 }
 
+export type RequestInit = {
+  method?: ByteString,
+  headers?: HeadersInit,
+  body?: BodyInit,
+  referrer?: USVString,
+  credentials?: RequestCredentials,
+  mode?: RequestMode,
+  remoteAddr?: string // Fly.io property
+}
 export type RequestInfo = Request | USVString
+export type RequestCredentials = 'omit' | 'same-origin' | 'include'
+export type RequestMode = 'navigate' | 'same-origin' | 'no-cors' | 'cors'
+export type ReferrerPolicy =
+  '' |
+  'no-referrer' |
+  'no-referrer-when-downgrade' |
+  'same-origin' |
+  'origin' |
+  'strict-origin' |
+  'origin-when-cross-origin' |
+  'strict-origin-when-cross-origin' |
+  'unsafe-url'
 
 /**
  * An HTTP request
@@ -26,17 +48,21 @@ export type RequestInfo = Request | USVString
  * @mixes Body
  */
 export default class Request extends BodyMixin {
-  method: ByteString
-  url: USVString
-  headers: Headers
-  referrer: USVString
+  readonly method: ByteString
+  readonly url: USVString
+  readonly headers: Headers
+  readonly referrer: USVString
+  readonly referrerPolicy: ReferrerPolicy
+  readonly credentials: RequestCredentials
+  readonly mode: RequestMode
+  readonly remoteAddr?: string // Fly.io property
+  private cookieJar: CookieJar
 
   /*
   readonly attribute RequestDestination destination;
 
   readonly attribute ReferrerPolicy referrerPolicy;
   readonly attribute RequestMode mode;
-  readonly attribute RequestCredentials credentials;
   readonly attribute RequestCache cache;
   readonly attribute RequestRedirect redirect;
   readonly attribute DOMString integrity;
@@ -44,7 +70,7 @@ export default class Request extends BodyMixin {
   readonly attribute AbortSignal signal;
   */
 
-  constructor(input: Blob | String, init: Object) {
+  constructor(input: RequestInfo, init?: RequestInit) {
     if (arguments.length < 1) throw TypeError('Not enough arguments');
 
     let body = null
@@ -52,78 +78,53 @@ export default class Request extends BodyMixin {
       body = init.body
     }
     if (!body && input instanceof Request) {
-      if (input.bodyUsed) throw TypeError();
+      if (input.bodyUsed()) throw TypeError();
       // grab request body if we can
       body = input.bodySource
     }
-    // logger.debug('creating request! body typeof:', typeof Body, typeof init.body)
     super(body)
 
-    // readonly attribute ByteString method;
-    /**
-     * The HTTP request method
-     * @readonly
-     * @default GET
-     * @type {string}
-     */
     this.method = 'GET';
-
-    // readonly attribute USVString url;
-    /**
-     * The request URL
-     * @readonly
-     * @type {string}
-     */
     this.url = '';
-
-    // readonly attribute DOMString referrer;
-    this.referrer = null; // TODO: Implement.
-
-    // readonly attribute RequestMode mode;
-    this.mode = null; // TODO: Implement.
-
-    // readonly attribute RequestCredentials credentials;
-    this.credentials = 'omit';
+    this.referrer = ''
+    this.mode = 'no-cors'
+    this.credentials = 'omit'
+    this.referrerPolicy = ''
 
     if (input instanceof Request) {
-      if (input.bodyUsed) throw TypeError();
+      if (input.bodyUsed()) throw TypeError();
       this.method = input.method;
       this.url = input.url;
       this.headers = new Headers(input.headers);
       this.headers._guard = input.headers._guard;
       this.credentials = input.credentials;
-      this._stream = input._stream;
+      this.stream = input.stream;
       this.remoteAddr = input.remoteAddr;
-      logger.info("new Request remoteAddr:", this.remoteAddrget)
       this.referrer = input.referrer;
       this.mode = input.mode;
     } else {
       this.url = input
     }
 
-    init = Object(init);
+    if (init) {
+      if (init.remoteAddr) {
+        this.remoteAddr = init.remoteAddr
+      }
 
-    if ('remoteAddr' in init) {
-      this.remoteAddr = init.remoteAddr
+      if (init.method) {
+        this.method = normalizeMethod(init.method)
+      }
+
+      if (init.headers) {
+        this.headers = new Headers(init.headers);
+      } else if (!this.headers) {
+        this.headers = new Headers()
+      }
+
+      if (init.credentials) {
+        this.credentials = init.credentials;
+      }
     }
-
-    if ('method' in init) {
-      this.method = normalizeMethod(init.method)
-    }
-
-    if ('headers' in init) {
-      /**
-       * Headers sent with the request.
-       * @type {Headers}
-       */
-      this.headers = new Headers(init.headers);
-    } else if (!('headers' in this)) {
-      this.headers = new Headers()
-    }
-
-    if ('credentials' in init &&
-      (['omit', 'same-origin', 'include'].indexOf(init.credentials) !== -1))
-      this.credentials = init.credentials;
   }
 
   get cookies() {
@@ -134,12 +135,12 @@ export default class Request extends BodyMixin {
   }
 
   clone() {
-    if (this.bodyUsed)
+    if (this.bodyUsed())
       throw new Error("body has already been used")
     let body2 = this.bodySource
 
     if (this.bodySource instanceof ReadableStream) {
-      const tees = this.body.tee()
+      const tees = this.body().tee()
       this.stream = this.bodySource = tees[0]
       body2 = tees[1]
     }
