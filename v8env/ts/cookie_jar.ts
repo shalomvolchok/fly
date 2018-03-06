@@ -1,5 +1,6 @@
 import * as cookie from 'cookie'
 import Request from './request.ts'
+import Response from './response.ts'
 
 const cookieAttributeNames = ['Max-Age', 'Expires', 'HttpOnly', 'Secure', 'Path', 'SameSite', 'Domain']
 

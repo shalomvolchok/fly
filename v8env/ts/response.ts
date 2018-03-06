@@ -1,5 +1,6 @@
 import CookieJar from './cookie_jar.ts'
 import BodyMixin, { BodySource } from './body_mixin.ts'
+import Headers, { HeadersInit } from './headers.ts'
 
 export type ResponseInit = {
   status: number,
@@ -24,7 +25,7 @@ export type ResponseType =
  * @param {String} [init.url]
  * @mixes Body
  */
-class Response extends BodyMixin {
+export default class Response extends BodyMixin {
   readonly type: ResponseType
   readonly url: USVString
   readonly redirected: boolean
@@ -62,6 +63,7 @@ class Response extends BodyMixin {
 
     // TODO: Implement these
     this.type = 'basic'; // TODO: ResponseType
+    this.cookieJar = null
   }
 
   get cookies(): CookieJar {

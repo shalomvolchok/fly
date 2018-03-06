@@ -17,8 +17,8 @@ import fetchInit from './fetch'
 import bodyMixin from './ts/body_mixin.ts'
 import Blob from './ts/blob.ts'
 import FormData from './ts/form_data.ts'
-import responseInit from './response'
 import Request from './ts/request.ts'
+import Response from './ts/response.ts'
 import cache from './cache'
 import timersInit from './timers'
 
@@ -76,7 +76,7 @@ global.bootstrap = function bootstrap() {
 	global.Body = bodyMixin
 	global.Blob = Blob
 	global.FormData = FormData
-	global.Response = responseInit(ivm, dispatcher)
+	global.Response = Response
 	global.Request = Request
 
 	// oh boy
