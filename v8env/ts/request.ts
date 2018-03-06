@@ -1,7 +1,7 @@
 import { logger } from './logger.ts'
 import CookieJar from './cookie_jar.ts'
-import BodyMixin from './body_mixin.ts'
-import Headers from './body_mixin.ts'
+import BodyMixin, { BodySource } from './body_mixin.ts'
+import Headers, { HeadersInit } from './headers.ts'
 
 
 function byteUpperCase(s: string) {
@@ -56,7 +56,7 @@ export default class Request extends BodyMixin {
   readonly credentials: RequestCredentials
   readonly mode: RequestMode
   readonly remoteAddr?: string // Fly.io property
-  private cookieJar: CookieJar
+  private cookieJar: CookieJar | null
 
   /*
   readonly attribute RequestDestination destination;
@@ -73,16 +73,17 @@ export default class Request extends BodyMixin {
   constructor(input: RequestInfo, init?: RequestInit) {
     if (arguments.length < 1) throw TypeError('Not enough arguments');
 
-    let body = null
+    let body: BodySource = ''
     if (init && init.body) {
       body = init.body
     }
     if (!body && input instanceof Request) {
-      if (input.bodyUsed()) throw TypeError();
+      if (input.bodyUsed)
+        throw TypeError();
       // grab request body if we can
       body = input.bodySource
     }
-    super(body)
+    super(body || "")
 
     this.method = 'GET';
     this.url = '';
@@ -90,9 +91,12 @@ export default class Request extends BodyMixin {
     this.mode = 'no-cors'
     this.credentials = 'omit'
     this.referrerPolicy = ''
+    this.headers = new Headers()
+    this.cookieJar = null
 
     if (input instanceof Request) {
-      if (input.bodyUsed()) throw TypeError();
+      if (input.bodyUsed)
+        throw TypeError();
       this.method = input.method;
       this.url = input.url;
       this.headers = new Headers(input.headers);
@@ -122,26 +126,26 @@ export default class Request extends BodyMixin {
         this.credentials = init.credentials;
       }
     }
+  }
 
-    if (!this.headers) {
-      this.headers = new Headers()
+  get cookies(): CookieJar {
+    if (this.cookieJar === null) {
+      const cj = new CookieJar(this)
+      this.cookieJar = cj
+      return cj
+    } else {
+      return this.cookieJar
     }
   }
 
-  get cookies() {
-    if (this.cookieJar)
-      return this.cookieJar
-    this.cookieJar = new CookieJar(this)
-    return this.cookieJar
-  }
-
+  /*
   clone() {
-    if (this.bodyUsed())
+    if (this.bodyUsed)
       throw new Error("body has already been used")
     let body2 = this.bodySource
 
     if (this.bodySource instanceof ReadableStream) {
-      const tees = this.body().tee()
+      const tees = this.body.tee()
       this.stream = this.bodySource = tees[0]
       body2 = tees[1]
     }
@@ -154,4 +158,5 @@ export default class Request extends BodyMixin {
     })
     return cloned
   }
+  */
 }

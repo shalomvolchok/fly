@@ -29,7 +29,7 @@ export default class Headers implements Iterable<[ByteString, ByteString] | null
   private counter = 0
   private _headerList: Array<[ByteString, ByteString]>
 
-  constructor(init: Headers | HeadersInit) {
+  constructor(init?: Headers | HeadersInit) {
     this._headerList = new Array<[ByteString, ByteString]>()
     if (init) {
       fill(this, init)
