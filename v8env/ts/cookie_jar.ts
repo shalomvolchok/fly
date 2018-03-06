@@ -1,4 +1,5 @@
 import * as cookie from 'cookie'
+import Request from './request.ts'
 
 const cookieAttributeNames = ['maxAge', 'expires', 'httpOnly', 'secure', 'path', 'sameSite', 'domain']
 
