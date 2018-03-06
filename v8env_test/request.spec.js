@@ -16,11 +16,17 @@ describe('Request', () => {
     it('are parsed correctly', () => {
       const r = new Request('https://example.com', {
         headers: {
-          'Cookie': 'id=a3fWa; Expires=Wed, 21 Oct 2025 07:28:00 GMT; Secure; HttpOnly'
+          'Cookie': 'id=a3fWa; Expires=Wed, 21 Oct 2025 07:28:00 GMT; Secure=true; HttpOnly=true'
         }
       })
-      const cookies = r.cookies()
-      expect(r.length).to.have.lengthOf(1)
+      const cookie = r.cookies.get('id')
+      console.log(cookie
+      )
+      expect(cookie.name).to.equal('id')
+      expect(cookie.value).to.equal('a3fWa')
+      //expect(cookie.Expires).to.equal('Wed, 21 Oct 2025 07:28:00 GMT')
+      //expect(cookie.Secure).to.be.true
+      //expect(cookie.HttpOnly).to.be.true
     })
   })
 })

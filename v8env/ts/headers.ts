@@ -67,11 +67,15 @@ export default class Headers implements Iterable<[ByteString, ByteString] | null
 
   get(name: ByteString): ByteString | null {
     name = name.toLowerCase();
+    var sequence = [];
     for (var index = 0; index < this._headerList.length; ++index) {
       if (this._headerList[index][0] === name)
-        return this._headerList[index][1];
+        sequence.push(this._headerList[index][1]);
     }
-    return null;
+    if (sequence.length === 0) {
+      return null
+    }
+    return sequence.join(', ');
   }
 
   getAll(name: ByteString): ByteString[] {

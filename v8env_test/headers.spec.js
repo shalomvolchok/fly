@@ -11,7 +11,7 @@ describe('Headers', () => {
   })
 
   it('can be filled with Object', () => {
-    headers = {
+    const headers = {
       'Content-Type': 'text/xml',
       'Breaking-Bad': [
         '<3',
@@ -24,7 +24,7 @@ describe('Headers', () => {
   })
 
   it('can be filled with Array', () => {
-    headers = [
+    const headers = [
       ['Content-Type', 'text/xml'],
       ['Breaking-Bad', '<3'],
       ['Breaking-Bad', 'yeah']
