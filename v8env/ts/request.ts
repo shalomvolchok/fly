@@ -96,7 +96,6 @@ export default class Request extends BodyMixin {
       this.method = input.method;
       this.url = input.url;
       this.headers = new Headers(input.headers);
-      this.headers._guard = input.headers._guard;
       this.credentials = input.credentials;
       this.stream = input.stream;
       this.remoteAddr = input.remoteAddr;
@@ -117,13 +116,15 @@ export default class Request extends BodyMixin {
 
       if (init.headers) {
         this.headers = new Headers(init.headers);
-      } else if (!this.headers) {
-        this.headers = new Headers()
       }
 
       if (init.credentials) {
         this.credentials = init.credentials;
       }
+    }
+
+    if (!this.headers) {
+      this.headers = new Headers()
     }
   }
 
