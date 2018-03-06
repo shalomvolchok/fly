@@ -78,6 +78,7 @@ export default class Headers implements Iterable<[ByteString, ByteString] | null
     return sequence.join(', ');
   }
 
+  // get API doesn't work well with Set-Cookie header so we should keep this around
   getAll(name: ByteString): ByteString[] {
     name = name.toLowerCase();
     var sequence = [];

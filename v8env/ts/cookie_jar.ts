@@ -1,7 +1,7 @@
 import * as cookie from 'cookie'
 import Request from './request.ts'
 
-const cookieAttributeNames = ['maxAge', 'expires', 'httpOnly', 'secure', 'path', 'sameSite', 'domain']
+const cookieAttributeNames = ['Max-Age', 'Expires', 'HttpOnly', 'Secure', 'Path', 'SameSite', 'Domain']
 
 /**
  * A jar for storing delicious cookies.
@@ -15,10 +15,10 @@ export default class CookieJar {
   constructor(parent: Request | Response) {
     this.parent = parent
     if (parent instanceof Request) {
-      this.cookies = parseCookies(parent.headers.get('Cookie'))
+      this.cookies = parseCookies(parent.headers.getAll('Cookie'))
     }
     else if (parent instanceof Response) {
-      this.cookies = parseCookies(parent.headers.get('Set-Cookie'))
+      this.cookies = parseCookies(parent.headers.getAll('Set-Cookie'))
     } else {
       throw new TypeError('Expected parent to be instance of Request or Response.')
     }
@@ -28,8 +28,8 @@ export default class CookieJar {
 	 * Gets a cookie by name
 	 * @param {String} name
 	 */
-  get(name: string) {
-    return this.cookies.find((c) => c.name === name)
+  get(name: string): { [key: string]: string } | null {
+    return this.cookies.find((c) => c.name === name) || null
   }
 
 	/**
@@ -48,13 +48,10 @@ export default class CookieJar {
   }
 }
 
-function parseCookies(rawCookies: string | null): { [key: string]: string }[] {
+function parseCookies(rawCookies: string[]): { [key: string]: string }[] {
   let cookies: { [key: string]: string }[] = []
-  if (rawCookies === null) {
-    return cookies
-  }
 
-  for (let c of rawCookies.split(',')) {
+  for (let c of rawCookies) {
     cookies = cookies.concat(parseCookie(c))
   }
   return cookies
