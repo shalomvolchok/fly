@@ -1,9 +1,13 @@
-import { ivm, App } from './'
+import { App } from './'
+import * as ivm from 'isolated-vm'
 import log from "./log"
 //import { conf } from './config'a
 import { Bridge, BridgeOptions } from './bridge/bridge'
 import { Trace } from './trace'
 import { EventEmitter } from 'events';
+
+require("../build/Debug/bindings")
+const bindings = new ivm.NativeModule(require.resolve("../build/Debug/bindings"));
 
 import * as winston from 'winston'
 
@@ -162,6 +166,7 @@ export class Context extends EventEmitter {
 	async bootstrap(bridge: Bridge) {
 		await Promise.all([
 			this.set('global', this.global.derefInto()),
+			this.set("bindings", bindings.createSync(this.ctx).derefInto()),
 			this.set('_ivm', ivm),
 			this.set("_dispatch", new ivm.Reference((name: string, ...args: any[]) => {
 				return bridge.dispatch(this, name, ...args)

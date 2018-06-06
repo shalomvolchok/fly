@@ -57,3 +57,39 @@ describe("crypto", () => {
     })
   })
 })
+
+describe("crypto native", () => {
+  describe("digest", () => {
+    // it("only accepts certain algorithms", (done) => {
+    //   bindings.crypto.digest("sadasd", new ArrayBuffer(8))
+    //     .then(() => done(new Error("should have been rejected.")))
+    //     .catch((err) => {
+    //       expect(err.message).to.eq("asdasd")
+    //       done()
+    //     })
+    // })
+    it("creates a hash from a string", (done) => {
+      bindings.crypto.digest("SHA-1", bindings.textEncoding.encode("hello world"), (err, hash) => {
+        if (err)
+          return done(err)
+        expect(hash).to.be.instanceof(ArrayBuffer)
+        done()
+      })
+    })
+  })
+  describe("getRandomValues", () => {
+    it("fills the Uint8Array", () => {
+      let array = new Uint8Array(24);
+      bindings.crypto.getRandomValues(array)
+      let zeroCount = 0
+      for (let u8 of array) {
+        if (u8 == 0) zeroCount++
+      }
+      expect(zeroCount).to.be.lessThan(array.length)
+    })
+    it("only accepts 64KB buffers at most", (done) => {
+      let array = new Uint8Array(64 * 1024 + 1);
+      expect(function () { bindings.crypto.getRandomValues(array) }).to.throw("errer")
+    })
+  })
+})

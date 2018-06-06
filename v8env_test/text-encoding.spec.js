@@ -21,3 +21,10 @@ describe("TextEncoder", () => {
     expect(te.encode("hello")).to.deep.equal(new Uint8Array([104, 101, 108, 108, 111]))
   })
 })
+
+describe("native", () => {
+  it("works", () => {
+    expect(bindings.textEncoding.decode(new Uint8Array([104, 101, 108, 108, 111]))).to.equal("hello");
+    expect(bindings.textEncoding.encode("hello")).to.deep.equal(new Uint8Array([104, 101, 108, 108, 111]).buffer);
+  })
+})
