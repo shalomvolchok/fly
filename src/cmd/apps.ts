@@ -4,7 +4,7 @@ import { processResponse } from '../utils/cli'
 import { existsSync, writeFileSync } from 'fs';
 import { Command } from 'commandpost';
 
-const Table = require('cli-table2')
+const Table = require('cli-table3')
 
 const promptly = require('promptly')
 
@@ -81,7 +81,7 @@ const appsMove = apps
   .usage(`fly apps move`)
   .action(async function (this: Command<CommonOptions, any>, opts, args, rest) {
     const API = apiClient(this)
-    const appName = getAppName(this, { env: ['production'] })
+    const appName = getAppName(this)
     try {
       const res = await API.get(`/api/v1/orgs`)
       processResponse(res, async (res: any) => {
@@ -118,7 +118,7 @@ const appsDelete = apps
   .usage(`fly apps delete`)
   .action(async function (this: Command<CommonOptions, any>, opts, args, rest) {
     const API = apiClient(this)
-    const appName = getAppName(this, { env: ['production'] })
+    const appName = getAppName(this)
     try {
 
       try {

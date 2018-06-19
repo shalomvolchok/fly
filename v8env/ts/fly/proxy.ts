@@ -1,7 +1,36 @@
 /**
+ * Library for proxying requests to origins. Use this to create `fetch` like functions
+ *  for making requests to other services. For example:
+ * 
+ * ```javascript
+ * // sends all traffic to an Amazon ELB,
+ * // `Host` header passes through from visitor request
+ * const origin = proxy("https://elb1298.amazonaws.com")
+ * ```
+ * 
+ * By default, this function sends the `Host` header inferred from the origin URL. To forward
+ * host headers sent by visitors, set `forwardHostHeader` to true.
+ * 
+ * ```javascript
+ * // sends all traffic to an Amazon ELB, include host header from original request.
+ * const origin = proxy("https://elb1298.amazonaws.com", {
+ *  forwardHostHeader: true
+ * })
+ * ```
+ * 
+ * And then way more rare, no host header at all. Usually you'd strip out `x-forwarded-host`, 
+ * since some origins don't like that:
+ * ```javascript
+ * // sends all traffic to an Amazon ELB, never sends a host header
+ * const origin = proxy("https://elb1298.amazonaws.com", {
+ *  headers: { host: false}
+ * })
+ * ```
+ * 
+ * @preferred
  * @module fly/proxy
- * Library for proxying requests to origins.
  */
+
 /**
  * This generates a `fetch` like function for proxying requests to a given origin.
  * When this function makes origin requests, it adds standard proxy headers like 
@@ -70,6 +99,11 @@ export function buildProxyRequest(origin: string | URL, options: ProxyOptions, r
   breq.headers.set("x-forwarded-for", (<any>req).remoteAddr)
   breq.headers.set("x-forwarded-host", url.hostname)
 
+  if (!options.forwardHostHeader) {
+    // set host header to origin.hostnames
+    breq.headers.set("host", origin.hostname)
+  }
+
   if (options.headers) {
     for (const h of Object.getOwnPropertyNames(options.headers)) {
       const v = options.headers[h]
@@ -98,6 +132,13 @@ export interface ProxyOptions {
    * ```
    */
   stripPath?: string,
+
+  /**
+   * Forward `Host` header from original request. Without this options,
+   * proxy requests infers a host header from the origin URL.
+   * Defaults to `false`.
+   */
+  forwardHostHeader?: boolean,
 
   /**
    * Headers to set on backend request. Each header accepts either a `boolean` or `string`.
