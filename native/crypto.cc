@@ -11,6 +11,7 @@
 
 #include <openssl/rand.h>
 #include <openssl/sha.h>
+#include <openssl/err.h>
 
 using namespace v8;
 using namespace node;
@@ -41,15 +42,6 @@ NAN_METHOD(getRandomValues)
 
 static std::vector<std::string> algos = {"sha1", "sha256", "sha384", "sha512"};
 
-struct crypto_job
-{
-  std::string algo;
-  Isolate *isolate;
-  Persistent<Context> context;
-  Persistent<Function> cb;
-  Persistent<ArrayBuffer> data;
-};
-
 std::string str(Isolate *iso, Local<Value> value)
 {
   String::Utf8Value s(iso, value);
@@ -60,90 +52,10 @@ std::string str(Isolate *iso, Local<Value> value)
   return *s;
 }
 
-static void
-crypto_work_cb(uv_work_t *req)
-{
-  std::cout << "IN CRYPTO WORK!\n";
-  crypto_job *job = static_cast<crypto_job *>(req->data);
-
-  Locker locker(job->isolate);
-  Isolate::Scope iso_scope(job->isolate);
-  HandleScope scope(job->isolate);
-
-  Local<Context> context = job->context.Get(job->isolate);
-  v8::Context::Scope ctx_scope(context);
-
-  Local<ArrayBuffer> data = job->data.Get(job->isolate);
-
-  // std::cout << "PPR is empty? " << (job->pr.IsEmpty() ? "true" : "false") << "\n";
-  Local<Function> cb = job->cb.Get(job->isolate);
-  // std::cout << "PR is empty? " << (pr.IsEmpty() ? "true" : "false") << "\n";
-
-  Local<ArrayBuffer> res;
-  if (job->algo == "sha1")
-  {
-    std::cout << "doing sha1\n";
-    res = ArrayBuffer::New(job->isolate, 20);
-    SHA1((unsigned char *)data->GetContents().Data(), data->ByteLength(), (unsigned char *)res->GetContents().Data());
-  }
-  int argc = 2;
-  Local<Value> argv[argc];
-  argv[0] = Null(job->isolate);
-  argv[1] = res;
-  cb->Call(context, Undefined(job->isolate), argc, argv);
-  // Maybe<bool> pr_res = pr->Resolve(context, res);
-  // if (pr_res.IsNothing())
-  // {
-  //   std::cout << "pr_res was nothing!";
-  // }
-  // else
-  // {
-  //   std::cout << "pr_res wasn't nothing! " << (pr_res.FromJust() ? "true" : "false") << std::endl;
-  // }
-  std::cout << "after work cb\n";
-}
-
-// static void
-// crypto_async_cb(uv_async_t *req)
-// {
-//   std::cout << "IN CRYPTO WORK!\n";
-//   auto job = static_cast<crypto_job *>(req->data);
-
-//   Locker locker(job->isolate);
-//   Isolate::Scope iso_scope(job->isolate);
-//   HandleScope scope(job->isolate);
-
-//   Local<Context> ctx = job->context.Get(job->isolate);
-//   v8::Context::Scope context_scope(ctx);
-
-//   Local<ArrayBuffer> data = job->data.Get(job->isolate);
-
-//   if (job->algo == "sha1")
-//   {
-//     Local<ArrayBuffer> res = ArrayBuffer::New(job->isolate, 20);
-//     SHA1((unsigned char *)data->GetContents().Data(), data->ByteLength(), (unsigned char *)res->GetContents().Data());
-//     std::cout << "PPR is empty? " << (job->pr.IsEmpty() ? "true" : "false") << "\n";
-//     Local<Promise::Resolver> pr = job->pr.Get(job->isolate);
-//     std::cout << "PR is empty? " << (pr.IsEmpty() ? "true" : "false") << "\n";
-//     pr->Resolve(ctx, res);
-//   }
-// }
-
-static void after_crypto_work_cb(uv_work_t *req, int status)
-{
-  std::cout << "AFTER CRYPTO WORK! status: " << status << "\n";
-  auto job = (crypto_job *)req->data;
-  job->context.Reset();
-  job->cb.Reset();
-  job->data.Reset();
-  delete job;
-}
-
 NAN_METHOD(digest)
 {
   auto isolate = info.GetIsolate();
   Nan::HandleScope scope;
-  // Local<String::Utf8Value> algoArg(info[0]);
   auto algo = str(isolate, info[0]);
 
   algo.erase(std::remove(algo.begin(), algo.end(), '-'), algo.end());
@@ -152,11 +64,6 @@ NAN_METHOD(digest)
   std::cout << "algo: " << algo << "\n";
 
   auto ctx = isolate->GetCurrentContext();
-  // Local<Promise::Resolver> pr = Promise::Resolver::New(ctx).ToLocalChecked();
-
-  // info.GetReturnValue().Set(pr->GetPromise()); // this wants a promise...
-
-  Local<Function> cb = Local<Function>::Cast(info[2]);
 
   Local<Value> dataArg = info[1];
   Local<ArrayBuffer> data;
@@ -182,20 +89,29 @@ NAN_METHOD(digest)
     return;
   }
 
-  auto job = new crypto_job;
-  job->isolate = info.GetIsolate();
-  job->context.Reset(isolate, ctx);
-  job->cb.Reset(isolate, cb);
-  job->data.Reset(isolate, data);
-  job->algo = algo;
+  Isolate::Scope iso_scope(isolate);
+  v8::Context::Scope ctx_scope(ctx);
 
-  // uv_async_t *async = new uv_async_t;
-  // async->data = job;
-  // uv_async_init(uv_default_loop(), async, crypto_async_cb);
-  // uv_async_send(async);
+  Local<ArrayBuffer> res;
+  if (algo == "sha1")
+  {
+    std::cout << "doing sha1\n";
+    res = ArrayBuffer::New(isolate, 20);
+    SHA1((unsigned char *)data->GetContents().Data(), data->ByteLength(), (unsigned char *)res->GetContents().Data());
+  }
 
-  uv_work_t *work = new uv_work_t;
-  work->data = job;
-  uv_queue_work(uv_default_loop(), work, crypto_work_cb, after_crypto_work_cb);
+  auto errcode = ERR_get_error();
+
+  if (errcode == 0)
+  {
+    std::cout << "no error" << std::endl;
+  }
+  else
+  {
+    isolate->ThrowException(Exception::Error(String::NewFromUtf8(isolate, ERR_error_string(errcode, NULL))));
+    return;
+  }
+
+  info.GetReturnValue().Set(res);
 }
 } // namespace crypto
