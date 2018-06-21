@@ -24,9 +24,9 @@ declare var bindings: any
 /** @hidden */
 export const crypto = {
   subtle: {
-    generateKey(algorithm: RsaHashedKeyGenParams | EcKeyGenParams | DhKeyGenParams, extractable: boolean, keyUsages: string[]): CryptoKeyPair {
+    // generateKey(algorithm: RsaHashedKeyGenParams | EcKeyGenParams | DhKeyGenParams, extractable: boolean, keyUsages: string[]): CryptoKeyPair {
 
-    },
+    // },
 
     digest(algo: string, data: CryptoData, encoding?: string): Promise<ArrayBuffer | string> {
       return new Promise((resolve, reject) => {

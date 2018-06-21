@@ -1,12 +1,13 @@
 #include <v8.h>
 #include <nan.h>
+#include <isolated_vm.h>
 
 #include "text-encoding.h"
 #include "crypto.h"
 
 using namespace v8;
 
-extern "C" IVM_DLLEXPORT void InitForContext(Isolate *isolate, Local<Context> context, Local<Object> target)
+ISOLATED_VM_MODULE void InitForContext(Isolate *isolate, Local<Context> context, Local<Object> target)
 {
   Local<Object> textEncoding = v8::Object::New(isolate);
   Nan::Set(textEncoding, Nan::New("decode").ToLocalChecked(), Nan::GetFunction(Nan::New<FunctionTemplate>(textencoding::Decode)).ToLocalChecked());

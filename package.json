@@ -98,7 +98,7 @@
     "glossy": "0.x.x",
     "ioredis": "^3.2.2",
     "ioredis-mock": "^3.6.1",
-    "isolated-vm": "1.6.1",
+    "isolated-vm": "github:laverdet/isolated-vm#master",
     "js-yaml": "^3.10.0",
     "mocha": "^4.0.1",
     "nan": "^2.10.0",
