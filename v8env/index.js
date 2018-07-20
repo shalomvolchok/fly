@@ -20,12 +20,14 @@ import { Response } from './response'
 import { Request } from './request'
 import cache from './cache'
 import { setTimeout, setImmediate, clearTimeout, setInterval, clearInterval } from './timers'
+import { btoa, atob } from "./ts/base64"
 
 import { Document, Element } from './document'
 
 import { MiddlewareChain } from './middleware'
 
 global.middleware = {}
+global.window = global
 
 global.bootstrapBridge = function bootstrapBridge(ivm, dispatch) {
 	delete global.bootstrapBridge
@@ -43,15 +45,18 @@ global.bootstrap = function bootstrap() {
 
 	global.console = console
 
-	Object.assign(global, {
+	global._fly = {}
+	Object.assign(global._fly, {
 		setTimeout, clearTimeout, setImmediate, setInterval, clearInterval,
 		ReadableStream, WritableStream, TransformStream,
 		TextEncoder, TextDecoder,
 		Headers, Request, Response, fetch, Body,
 		Blob, FormData, URL, URLSearchParams,
 		cache, crypto, TimeoutError,
+		btoa, atob, // Base64
 		MiddlewareChain // ugh
 	})
+	Object.assign(global, global._fly)
 
 	// Events
 	global.fireFetchEvent = fireFetchEvent

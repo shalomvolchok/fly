@@ -98,6 +98,10 @@ export function getWebpackConfig(cwd: string, opts?: AppBuilderOptions): webpack
     sourceMapFilename: 'bundle.map.json',
   }
 
+  if (!conf.node) {
+    conf.node = false
+  }
+
   let v8EnvPath = path.resolve(__filename, "../../../v8env/lib")
 
   conf.resolve = Object.assign({
