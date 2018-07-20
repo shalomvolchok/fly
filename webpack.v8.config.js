@@ -15,11 +15,9 @@ module.exports = {
     alias: {
       "@fly/image": path.resolve(__dirname, "./v8env/lib/fly/image"),
       "@fly/data": path.resolve(__dirname, "./v8env/lib/fly/data"),
-      "@fly/cache": path.resolve(__dirname, "./v8env/lib/fly/cache")
+      "@fly/cache": path.resolve(__dirname, "./v8env/lib/fly/cache"),
+      "fs": "mock"
     }
-  },
-  node: {
-    fs: 'empty'
   },
   module: {
     loaders: [
