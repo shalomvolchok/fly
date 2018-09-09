@@ -11,5 +11,5 @@ declare var bridge: any
  * @hidden
  */
 export function log(lvl, ...args) {
-  bridge.dispatch("log", lvl, format(...args))
+  // bridge.dispatch("log", lvl, format(...args))
 }

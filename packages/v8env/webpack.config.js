@@ -7,7 +7,7 @@ module.exports = {
     sourceMapFilename: 'v8env.map.json',
     hashFunction: 'sha1',
     hashDigestLength: 40,
-    path: path.join(__dirname, '/dist/')
+    path: path.join(__dirname, '/dist/'),
   },
   resolve: {
     modules: ["node_modules", "../../node_modules", "vendor"],
