@@ -75,17 +75,17 @@ interface Timer {
 const timers = new Map<number, Timer>();
 
 /** @internal */
-export function onMessage(name: string, ...args: any[]) {
-  const timerReadyId = args[0];
-  // const timerReadyDone = msg.done();
+export function onMessage(msg: fbs.TimerReady) {
+  const timerReadyId = msg.id();
+  const timerReadyDone = msg.done();
   const timer = timers.get(timerReadyId);
   if (!timer) {
     return;
   }
   timer.cb(...timer.args);
-  // if (timerReadyDone) {
-  timers.delete(timerReadyId);
-  // }
+  if (timerReadyDone) {
+    timers.delete(timerReadyId);
+  }
 }
 
 function startTimer(
@@ -108,13 +108,13 @@ function startTimer(
   let now = Date.now()
 
   // Send TimerStart message
-  // const builder = new flatbuffers.Builder();
-  // fbs.TimerStart.startTimerStart(builder);
-  // fbs.TimerStart.addId(builder, timer.id);
-  // fbs.TimerStart.addInterval(builder, timer.interval);
-  // fbs.TimerStart.addDelay(builder, timer.delay);
-  // const msg = fbs.TimerStart.endTimerStart(builder);
-  const baseRes = libfly.send("timerStart", timer.id, timer.delay);
+  const builder = new flatbuffers.Builder();
+  fbs.TimerStart.startTimerStart(builder);
+  fbs.TimerStart.addId(builder, timer.id);
+  fbs.TimerStart.addInterval(builder, timer.interval);
+  fbs.TimerStart.addDelay(builder, timer.delay);
+  const msg = fbs.TimerStart.endTimerStart(builder);
+  const baseRes = send(builder, fbs.Any.TimerStart, msg);
   console.log("timers.ts startTimer end:", Date.now() - now);
   assert(baseRes == null);
   return timer.id;

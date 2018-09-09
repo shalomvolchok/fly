@@ -113,18 +113,16 @@ function assert(cond: boolean, msg = "assert") {
 	}
 }
 
-function onMessage(name: string, ...args: any[]) {
+function onMessage(ui8: Uint8Array) {
 	libfly.log("ON MESSAGE")
 	let now = Date.now()
-	// const bb = new flatbuffers.ByteBuffer(ui8);
-	// const base = fbs.Base.getRootAsBase(bb);
-	switch (name) {
-		case "timerReady": {
-			libfly.log("FETCH RES")
-			// const msg = new fbs.FetchRes();
-			// assert(base.msg(msg) != null);
-			// onFetchRes(base, msg);
-			timers.onMessage("timerReady", args[1], args[2])
+	const bb = new flatbuffers.ByteBuffer(ui8);
+	const base = fbs.Base.getRootAsBase(bb);
+	switch (base.msgType()) {
+		case fbs.Any.TimerReady: {
+			const msg = new fbs.TimerReady();
+			assert(base.msg(msg) != null);
+			timers.onMessage(msg);
 			break;
 		}
 		// case fbs.Any.TimerReady: {
