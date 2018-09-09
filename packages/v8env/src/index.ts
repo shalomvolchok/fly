@@ -88,10 +88,12 @@ import { fly as fbs } from './msg_generated'
 import { flatbuffers } from 'flatbuffers'
 import * as timers from './timers'
 
-global.bootstrap = function bootstrap() {
-	libfly.recv(onMessage)
-	// sendStart();
-}
+import './globals'
+
+// window.bootstrap = function bootstrap() {
+libfly.recv(onMessage)
+// sendStart();
+// }
 
 function sendStart(): fbs.StartRes {
 	const builder = new flatbuffers.Builder();
@@ -111,28 +113,31 @@ function assert(cond: boolean, msg = "assert") {
 	}
 }
 
-function onMessage(ui8: Uint8Array) {
+function onMessage(name: string, ...args: any[]) {
 	libfly.log("ON MESSAGE")
-	const bb = new flatbuffers.ByteBuffer(ui8);
-	const base = fbs.Base.getRootAsBase(bb);
-	switch (base.msgType()) {
-		case fbs.Any.FetchRes: {
+	let now = Date.now()
+	// const bb = new flatbuffers.ByteBuffer(ui8);
+	// const base = fbs.Base.getRootAsBase(bb);
+	switch (name) {
+		case "timerReady": {
 			libfly.log("FETCH RES")
-			const msg = new fbs.FetchRes();
-			assert(base.msg(msg) != null);
+			// const msg = new fbs.FetchRes();
+			// assert(base.msg(msg) != null);
 			// onFetchRes(base, msg);
+			timers.onMessage("timerReady", args[1], args[2])
 			break;
 		}
-		case fbs.Any.TimerReady: {
-			libfly.log("TIMER READY")
-			const msg = new fbs.TimerReady();
-			assert(base.msg(msg) != null);
-			timers.onMessage(msg);
-			break;
-		}
+		// case fbs.Any.TimerReady: {
+		// 	libfly.log("TIMER READY")
+		// 	const msg = new fbs.TimerReady();
+		// 	assert(base.msg(msg) != null);
+		// 	timers.onMessage(msg);
+		// 	break;
+		// }
 		default: {
 			assert(false, "Unhandled message type");
 			break;
 		}
 	}
+	libfly.log("ON MESSAGE ENDED IN: " + (Date.now() - now));
 }

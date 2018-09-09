@@ -1,8 +1,8 @@
 import { globalEval } from './global-eval'
 
-type MessageCallback = (msg: Uint8Array) => void;
+type MessageCallback = (name: string, ...args: any[]) => void;
 interface Libfly {
-  send(msg: ArrayBufferView): null | Uint8Array;
+  send(name: string, ...args: any[]): null | Uint8Array;
   recv(cb: MessageCallback): void;
   log(x: string): void;
 }
