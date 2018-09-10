@@ -9,7 +9,8 @@ export enum Any{
   TimerStart= 1,
   TimerReady= 2,
   TimerClear= 3,
-  HttpRequest= 4
+  HttpRequest= 4,
+  HttpResponse= 5
 }};
 
 /**
@@ -121,10 +122,33 @@ mutate_cmd_id(value:number):boolean {
 };
 
 /**
+ * @returns boolean
+ */
+sync():boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : true;
+};
+
+/**
+ * @param boolean value
+ * @returns boolean
+ */
+mutate_sync(value:boolean):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, +value);
+  return true;
+};
+
+/**
  * @returns fly.ErrorKind
  */
 errorKind():fly.ErrorKind {
-  var offset = this.bb!.__offset(this.bb_pos, 6);
+  var offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : fly.ErrorKind.NoError;
 };
 
@@ -133,7 +157,7 @@ errorKind():fly.ErrorKind {
  * @returns boolean
  */
 mutate_error_kind(value:fly.ErrorKind):boolean {
-  var offset = this.bb!.__offset(this.bb_pos, 6);
+  var offset = this.bb!.__offset(this.bb_pos, 8);
 
   if (offset === 0) {
     return false;
@@ -150,7 +174,7 @@ mutate_error_kind(value:fly.ErrorKind):boolean {
 error():string|null
 error(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
 error(optionalEncoding?:any):string|Uint8Array|null {
-  var offset = this.bb!.__offset(this.bb_pos, 8);
+  var offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
 };
 
@@ -158,7 +182,7 @@ error(optionalEncoding?:any):string|Uint8Array|null {
  * @returns fly.Any
  */
 msgType():fly.Any {
-  var offset = this.bb!.__offset(this.bb_pos, 10);
+  var offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? /**  */ (this.bb!.readUint8(this.bb_pos + offset)) : fly.Any.NONE;
 };
 
@@ -167,7 +191,7 @@ msgType():fly.Any {
  * @returns boolean
  */
 mutate_msg_type(value:fly.Any):boolean {
-  var offset = this.bb!.__offset(this.bb_pos, 10);
+  var offset = this.bb!.__offset(this.bb_pos, 12);
 
   if (offset === 0) {
     return false;
@@ -182,7 +206,7 @@ mutate_msg_type(value:fly.Any):boolean {
  * @returns ?flatbuffers.Table
  */
 msg<T extends flatbuffers.Table>(obj:T):T|null {
-  var offset = this.bb!.__offset(this.bb_pos, 12);
+  var offset = this.bb!.__offset(this.bb_pos, 14);
   return offset ? this.bb!.__union(obj, this.bb_pos + offset) : null;
 };
 
@@ -190,7 +214,7 @@ msg<T extends flatbuffers.Table>(obj:T):T|null {
  * @param flatbuffers.Builder builder
  */
 static startBase(builder:flatbuffers.Builder) {
-  builder.startObject(5);
+  builder.startObject(6);
 };
 
 /**
@@ -203,10 +227,18 @@ static addCmdId(builder:flatbuffers.Builder, cmdId:number) {
 
 /**
  * @param flatbuffers.Builder builder
+ * @param boolean sync
+ */
+static addSync(builder:flatbuffers.Builder, sync:boolean) {
+  builder.addFieldInt8(1, +sync, +true);
+};
+
+/**
+ * @param flatbuffers.Builder builder
  * @param fly.ErrorKind errorKind
  */
 static addErrorKind(builder:flatbuffers.Builder, errorKind:fly.ErrorKind) {
-  builder.addFieldInt8(1, errorKind, fly.ErrorKind.NoError);
+  builder.addFieldInt8(2, errorKind, fly.ErrorKind.NoError);
 };
 
 /**
@@ -214,7 +246,7 @@ static addErrorKind(builder:flatbuffers.Builder, errorKind:fly.ErrorKind) {
  * @param flatbuffers.Offset errorOffset
  */
 static addError(builder:flatbuffers.Builder, errorOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(2, errorOffset, 0);
+  builder.addFieldOffset(3, errorOffset, 0);
 };
 
 /**
@@ -222,7 +254,7 @@ static addError(builder:flatbuffers.Builder, errorOffset:flatbuffers.Offset) {
  * @param fly.Any msgType
  */
 static addMsgType(builder:flatbuffers.Builder, msgType:fly.Any) {
-  builder.addFieldInt8(3, msgType, fly.Any.NONE);
+  builder.addFieldInt8(4, msgType, fly.Any.NONE);
 };
 
 /**
@@ -230,7 +262,7 @@ static addMsgType(builder:flatbuffers.Builder, msgType:fly.Any) {
  * @param flatbuffers.Offset msgOffset
  */
 static addMsg(builder:flatbuffers.Builder, msgOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(4, msgOffset, 0);
+  builder.addFieldOffset(5, msgOffset, 0);
 };
 
 /**
@@ -304,33 +336,10 @@ mutate_id(value:number):boolean {
 };
 
 /**
- * @returns boolean
- */
-interval():boolean {
-  var offset = this.bb!.__offset(this.bb_pos, 6);
-  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
-};
-
-/**
- * @param boolean value
- * @returns boolean
- */
-mutate_interval(value:boolean):boolean {
-  var offset = this.bb!.__offset(this.bb_pos, 6);
-
-  if (offset === 0) {
-    return false;
-  }
-
-  this.bb!.writeInt8(this.bb_pos + offset, +value);
-  return true;
-};
-
-/**
  * @returns number
  */
 delay():number {
-  var offset = this.bb!.__offset(this.bb_pos, 8);
+  var offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
 };
 
@@ -339,7 +348,7 @@ delay():number {
  * @returns boolean
  */
 mutate_delay(value:number):boolean {
-  var offset = this.bb!.__offset(this.bb_pos, 8);
+  var offset = this.bb!.__offset(this.bb_pos, 6);
 
   if (offset === 0) {
     return false;
@@ -353,7 +362,7 @@ mutate_delay(value:number):boolean {
  * @param flatbuffers.Builder builder
  */
 static startTimerStart(builder:flatbuffers.Builder) {
-  builder.startObject(3);
+  builder.startObject(2);
 };
 
 /**
@@ -366,18 +375,10 @@ static addId(builder:flatbuffers.Builder, id:number) {
 
 /**
  * @param flatbuffers.Builder builder
- * @param boolean interval
- */
-static addInterval(builder:flatbuffers.Builder, interval:boolean) {
-  builder.addFieldInt8(1, +interval, +false);
-};
-
-/**
- * @param flatbuffers.Builder builder
  * @param number delay
  */
 static addDelay(builder:flatbuffers.Builder, delay:number) {
-  builder.addFieldInt32(2, delay, 0);
+  builder.addFieldInt32(1, delay, 0);
 };
 
 /**
@@ -445,7 +446,7 @@ mutate_id(value:number):boolean {
 /**
  * @returns boolean
  */
-done():boolean {
+canceled():boolean {
   var offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
 };
@@ -454,7 +455,7 @@ done():boolean {
  * @param boolean value
  * @returns boolean
  */
-mutate_done(value:boolean):boolean {
+mutate_canceled(value:boolean):boolean {
   var offset = this.bb!.__offset(this.bb_pos, 6);
 
   if (offset === 0) {
@@ -482,10 +483,10 @@ static addId(builder:flatbuffers.Builder, id:number) {
 
 /**
  * @param flatbuffers.Builder builder
- * @param boolean done
+ * @param boolean canceled
  */
-static addDone(builder:flatbuffers.Builder, done:boolean) {
-  builder.addFieldInt8(1, +done, +false);
+static addCanceled(builder:flatbuffers.Builder, canceled:boolean) {
+  builder.addFieldInt8(1, +canceled, +false);
 };
 
 /**
@@ -828,6 +829,102 @@ static startHeadersVector(builder:flatbuffers.Builder, numElems:number) {
  * @returns flatbuffers.Offset
  */
 static endHttpRequest(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+}
+/**
+ * @constructor
+ */
+export namespace fly{
+export class HttpResponse {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns HttpResponse
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):HttpResponse {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param HttpResponse= obj
+ * @returns HttpResponse
+ */
+static getRootAsHttpResponse(bb:flatbuffers.ByteBuffer, obj?:HttpResponse):HttpResponse {
+  return (obj || new HttpResponse).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @returns number
+ */
+id():number {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_id(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint32(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param flatbuffers.Encoding= optionalEncoding
+ * @returns string|Uint8Array|null
+ */
+body():string|null
+body(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+body(optionalEncoding?:any):string|Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startHttpResponse(builder:flatbuffers.Builder) {
+  builder.startObject(2);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number id
+ */
+static addId(builder:flatbuffers.Builder, id:number) {
+  builder.addFieldInt32(0, id, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset bodyOffset
+ */
+static addBody(builder:flatbuffers.Builder, bodyOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(1, bodyOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endHttpResponse(builder:flatbuffers.Builder):flatbuffers.Offset {
   var offset = builder.endObject();
   return offset;
 };
