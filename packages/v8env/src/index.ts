@@ -83,62 +83,50 @@
 // }
 
 import { libfly } from './libfly'
-import { send } from "./fbs_util"
-import { fly as fbs } from './msg_generated'
-import { flatbuffers } from 'flatbuffers'
-import * as timers from './timers'
+import { sendSync, handleAsyncMsgFromRust } from "./dispatch"
+// import { fly as fbs } from './msg_generated'
+// import { flatbuffers } from 'flatbuffers'
+// import * as timers from './timers'
 
 import './globals'
 
-// window.bootstrap = function bootstrap() {
-libfly.recv(onMessage)
-// sendStart();
+libfly.recv(handleAsyncMsgFromRust)
+
+// function onMessage(ui8: Uint8Array) {
+// 	// libfly.log("ON MESSAGE")
+// 	let now = Date.now()
+// 	const bb = new flatbuffers.ByteBuffer(ui8);
+// 	const base = fbs.Base.getRootAsBase(bb);
+// 	switch (base.msgType()) {
+// 		case fbs.Any.TimerReady: {
+// 			const msg = new fbs.TimerReady();
+// 			assert(base.msg(msg) != null);
+// 			timers.onMessage(msg);
+// 			break;
+// 		}
+// 		case fbs.Any.HttpRequest: {
+// 			const msg = new fbs.HttpRequest();
+// 			base.msg(msg);
+// 			console.log("req:", msg.method() == fbs.HttpMethod.Get, msg.url());
+// 			for (let i = 0; i < msg.headersLength(); i++) {
+// 				const item = msg.headers(i)!;
+// 				console.log("header:", item.key(), "=>", item.value())
+// 			}
+// 			setTimeout(() => {
+// 				const builder = new flatbuffers.Builder();
+// 				fbs.HttpResponse.startHttpResponse(builder);
+// 				fbs.HttpResponse.addId(builder, msg.id());
+// 				fbs.HttpResponse.addBody(builder, builder.createString("hello world, woot"));
+// 				const startOffset = fbs.HttpResponse.endHttpResponse(builder);
+// 				const baseRes = send(builder, fbs.Any.HttpResponse, startOffset);
+// 				assert(baseRes == null);
+// 			}, 1000)
+// 			break;
+// 		}
+// 		default: {
+// 			assert(false, "Unhandled message type");
+// 			break;
+// 		}
+// 	}
+// 	// libfly.log("ON MESSAGE ENDED IN: " + (Date.now() - now));
 // }
-
-function sendStart(): fbs.StartRes {
-	const builder = new flatbuffers.Builder();
-	fbs.Start.startStart(builder);
-	const startOffset = fbs.Start.endStart(builder);
-	const baseRes = send(builder, fbs.Any.Start, startOffset);
-	assert(baseRes != null);
-	assert(fbs.Any.StartRes === baseRes!.msgType());
-	const startRes = new fbs.StartRes();
-	assert(baseRes!.msg(startRes) != null);
-	return startRes;
-}
-
-function assert(cond: boolean, msg = "assert") {
-	if (!cond) {
-		throw Error(msg);
-	}
-}
-
-function onMessage(ui8: Uint8Array) {
-	// libfly.log("ON MESSAGE")
-	let now = Date.now()
-	const bb = new flatbuffers.ByteBuffer(ui8);
-	const base = fbs.Base.getRootAsBase(bb);
-	switch (base.msgType()) {
-		case fbs.Any.TimerReady: {
-			const msg = new fbs.TimerReady();
-			assert(base.msg(msg) != null);
-			timers.onMessage(msg);
-			break;
-		}
-		case fbs.Any.HttpRequest: {
-			const msg = new fbs.HttpRequest();
-			base.msg(msg);
-			// console.log("req:", msg.method() == fbs.HttpMethod.Get, msg.url());
-			for (let i = 0; i < msg.headersLength(); i++) {
-				const item = msg.headers(i)!;
-				// console.log("header:", item.key(), "=>", item.value())
-			}
-			break;
-		}
-		default: {
-			assert(false, "Unhandled message type");
-			break;
-		}
-	}
-	// libfly.log("ON MESSAGE ENDED IN: " + (Date.now() - now));
-}
