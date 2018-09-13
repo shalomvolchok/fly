@@ -83,7 +83,7 @@
 // }
 
 import { libfly } from './libfly'
-import { sendSync, handleAsyncMsgFromRust } from "./dispatch"
+import { handleAsyncMsgFromRust } from "./dispatch"
 // import { fly as fbs } from './msg_generated'
 // import { flatbuffers } from 'flatbuffers'
 // import * as timers from './timers'

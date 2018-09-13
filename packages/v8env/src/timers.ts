@@ -57,6 +57,7 @@ import * as util from "./util";
 import { fly as fbs } from "./msg_generated";
 import { flatbuffers } from "flatbuffers";
 import { sendSync, sendAsync } from "./dispatch";
+import { libfly } from "./libfly";
 
 let nextTimerId = 1;
 
@@ -90,33 +91,35 @@ function startTimer(
   util.log("timers.ts startTimer");
 
   // Send TimerStart message
-  const builder = new flatbuffers.Builder();
-  fbs.TimerStart.startTimerStart(builder);
-  fbs.TimerStart.addId(builder, timer.id);
-  fbs.TimerStart.addDelay(builder, timer.delay);
-  const msg = fbs.TimerStart.endTimerStart(builder);
+  // const builder = new flatbuffers.Builder();
+  // fbs.TimerStart.startTimerStart(builder);
+  // fbs.TimerStart.addId(builder, timer.id);
+  // fbs.TimerStart.addDelay(builder, timer.delay);
+  // const msg = fbs.TimerStart.endTimerStart(builder);
 
-  sendAsync(builder, fbs.Any.TimerStart, msg).then(
-    baseRes => {
-      assert(fbs.Any.TimerReady === baseRes!.msgType());
-      const msg = new fbs.TimerReady();
-      assert(baseRes!.msg(msg) != null);
-      assert(msg.id() === timer.id);
-      if (msg.canceled()) {
-        util.log("timer canceled message");
-      } else {
-        cb(...args);
-        if (interval) {
-          // TODO Faking setInterval with setTimeout.
-          // We need a new timer implementation, this is just a stopgap.
-          startTimer(id, cb, delay, true, args);
-        }
-      }
-    },
-    error => {
-      throw error;
+  sendAsync("timer_start", id, delay).then(args => {
+    //   baseRes => {
+    //     assert(fbs.Any.TimerReady === baseRes!.msgType());
+    //     const msg = new fbs.TimerReady();
+    //     assert(baseRes!.msg(msg) != null);
+    //     assert(msg.id() === timer.id);
+    //     if (msg.canceled()) {
+    //       util.log("timer canceled message");
+    //     } else {
+    cb(...args);
+    if (interval) {
+      // TODO Faking setInterval with setTimeout.
+      // We need a new timer implementation, this is just a stopgap.
+      startTimer(id, cb, delay, true, args);
     }
-  );
+    //     }
+    //   },
+    //   error => {
+    //     throw error;
+    //   }
+  });
+
+
 }
 
 export function setTimeout(
@@ -142,10 +145,10 @@ export function setInterval(
 }
 
 export function clearTimer(id: number) {
-  const builder = new flatbuffers.Builder();
-  fbs.TimerClear.startTimerClear(builder);
-  fbs.TimerClear.addId(builder, id);
-  const msg = fbs.TimerClear.endTimerClear(builder);
-  const res = sendSync(builder, fbs.Any.TimerClear, msg);
-  assert(res == null);
+  // const builder = new flatbuffers.Builder();
+  // fbs.TimerClear.startTimerClear(builder);
+  // fbs.TimerClear.addId(builder, id);
+  // const msg = fbs.TimerClear.endTimerClear(builder);
+  // const res = sendSync(builder, fbs.Any.TimerClear, msg);
+  // assert(res == null);
 }
