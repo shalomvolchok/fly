@@ -3,12 +3,12 @@
  * @module fly
  * @private
  */
-declare var bridge: any
+import { sendSync } from './bridge'
 
 export class TextEncoder {
   constructor() { }
   encode(input) {
-    return bridge.dispatchSync("TextEncoder.encode", input)
+    return sendSync("encode", input)
   }
 }
 
@@ -16,6 +16,8 @@ export class TextDecoder {
   encoding: any
   constructor(encoding) { this.encoding = encoding }
   decode(input) {
-    return bridge.dispatchSync("TextDecoder.decode", input, this.encoding)
+    let res = sendSync("decode", input, this.encoding)
+    console.log("decoder res:", typeof res, res.length, Array.isArray(res))
+    return res[0]
   }
 }

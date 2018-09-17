@@ -17,6 +17,6 @@ export default {
   output: {
     file: 'dist/bundle.js',
     format: 'iife',
-    name: 'v8env'
+    name: 'flyMain'
   }
 };

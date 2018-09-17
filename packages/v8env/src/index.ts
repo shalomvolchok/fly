@@ -83,14 +83,23 @@
 // }
 
 import { libfly } from './libfly'
-import { handleAsyncMsgFromRust } from "./dispatch"
+import { handleAsyncMsgFromRust } from "./bridge"
+import "./globals";
 // import { fly as fbs } from './msg_generated'
 // import { flatbuffers } from 'flatbuffers'
 // import * as timers from './timers'
 
-import './globals'
+// import './globals'
+// import { globalEval } from './global-eval';
 
-libfly.recv(handleAsyncMsgFromRust)
+// const window = globalEval("this");
+// declare function log(...args: any[]);
+// log(window);
+// window.TextDecoder = TextDecoder;
+
+export default function flyMain() {
+  libfly.recv(handleAsyncMsgFromRust)
+}
 
 // function onMessage(ui8: Uint8Array) {
 // 	// libfly.log("ON MESSAGE")

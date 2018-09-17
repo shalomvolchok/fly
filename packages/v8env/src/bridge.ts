@@ -2,117 +2,77 @@
  * @module fly
  * @private
  */
-import { logger } from './logger'
+import { libfly } from "./libfly";
+import { flatbuffers } from "flatbuffers";
+import * as fbs from "./msg_generated";
+import * as errors from "./errors";
+import * as util from "./util";
 
-const DEFAULT_BRIDGE_TRANSFER_OPTIONS = {
-  release: true,
-  transfer: false
-}
+let nextCmdId = 0;
+const promiseTable = new Map<number, util.Resolvable<fbs.Base>>();
 
-/**
- * @hidden
- */
-export interface BridgeTransferOptions {
-  release?: boolean
-  transfer?: boolean
-}
-
-
-/**
- * @hidden
- */
-export default function initBridge(ivm, dispatch) {
-  const bridge = global.bridge = {
-    prepareValue(arg, opts: { release?: any } = {}) {
-      if (!arg) // false, undefined, null, 0, "" (all transferable)
-        return arg
-
-      let ctor;
-      // this can bomb with certain values
-      try {
-        ctor = arg.constructor
-      } catch (e) {
-        ctor = undefined
-      }
-
-      switch (ctor) {
-        // transferable ivm
-        case ivm.ExternalCopy:
-        case ivm.Reference:
-
-        // primitives
-        case String:
-        case Number:
-        case Boolean:
-          return arg
-
-        // typed arrays
-        case ArrayBuffer:
-        case Uint8Array:
-        case Int8Array:
-        case Uint8ClampedArray:
-        case Int16Array:
-        case Uint16Array:
-        case Int32Array:
-        case Uint32Array:
-        case Float32Array:
-        case Float64Array:
-          return bridge.wrapValue(arg, opts)
-
-        // transferable if wrapped
-        case DataView:
-        case Map:
-        case Set:
-        case RegExp:
-        case Date:
-        case Object: // plain object
-        case Array:
-          return bridge.wrapValue(arg, { release: !!opts.release, transfer: false })
-
-        case Function:
-          return bridge.wrapFunction(arg)
-
-        // simplified-values
-        case Error:
-          return arg.stack || arg.message || arg.toString()
-
-        default:
-          throw new Error(`Can't prepare a non-transferable value (constructor: '${ctor && ctor.name || 'unknown'}')`);
-      }
-    },
-    dispatch(name, ...args) {
-      logger.debug("dispatch", name)
-      return dispatch.apply(null, [name, ...args.map((a) => bridge.prepareValue(a))])
-    },
-    dispatchSync(name, ...args) {
-      logger.debug("dispatchSync", name)
-      return dispatch.applySyncPromise(null, [name, ...args.map((a) => bridge.prepareValue(a))])
-    },
-
-    wrapFunction(fn, options: BridgeTransferOptions = { release: true }) {
-      const opts = Object.assign({}, DEFAULT_BRIDGE_TRANSFER_OPTIONS, options || {})
-      if (!opts.release)
-        return new ivm.Reference(fn);
-
-      const cb = new ivm.Reference(function bridgeAutoReleaseFn(...args) {
-        try { cb.release() } catch (err) { } finally {
-          fn(...args)
-        }
-      })
-      return cb
-    },
-
-    wrapValue(value, options: BridgeTransferOptions = { release: true }) {
-      const opts = Object.assign({}, DEFAULT_BRIDGE_TRANSFER_OPTIONS, options || {})
-      if (!!opts.transfer)
-        return new ivm.ExternalCopy(value, { transferOut: true }).copyInto({ release: !!opts.release, transferIn: true });
-      return new ivm.ExternalCopy(value).copyInto({ release: !!opts.release });
-    },
-
-    isReference(v) {
-      return (v instanceof ivm.Reference)
-    }
-
+export function handleAsyncMsgFromRust(ui8: Uint8Array) {
+  const bb = new flatbuffers.ByteBuffer(ui8);
+  const base = fbs.Base.getRootAsBase(bb);
+  const cmdId = base.cmdId();
+  util.log("got msg", "cmdid:", cmdId, "type:", base.msgType);
+  const promise = promiseTable.get(cmdId);
+  util.assert(promise != null, `Expecting promise in table. ${cmdId}`);
+  promiseTable.delete(cmdId);
+  const err = errors.maybeError(base);
+  if (err != null) {
+    promise!.reject(err);
+  } else {
+    promise!.resolve(base);
   }
-  return bridge
+}
+
+// @internal
+export function sendAsync(
+  builder: flatbuffers.Builder,
+  msgType: fbs.Any,
+  msg: flatbuffers.Offset
+): Promise<fbs.Base> {
+  const [cmdId, resBuf] = sendInternal(builder, msgType, msg, false);
+  util.assert(resBuf == null);
+  const promise = util.createResolvable<fbs.Base>();
+  promiseTable.set(cmdId, promise);
+  return promise;
+}
+
+// @internal
+export function sendSync(
+  builder: flatbuffers.Builder,
+  msgType: fbs.Any,
+  msg: flatbuffers.Offset
+): null | fbs.Base {
+  const [cmdId, resBuf] = sendInternal(builder, msgType, msg, true);
+  util.assert(cmdId >= 0);
+  if (resBuf == null) {
+    return null;
+  } else {
+    const u8 = new Uint8Array(resBuf!);
+    // console.log("recv sync message", util.hexdump(u8));
+    const bb = new flatbuffers.ByteBuffer(u8);
+    const baseRes = fbs.Base.getRootAsBase(bb);
+    errors.maybeThrowError(baseRes);
+    return baseRes;
+  }
+}
+
+function sendInternal(
+  builder: flatbuffers.Builder,
+  msgType: fbs.Any,
+  msg: flatbuffers.Offset,
+  sync = true
+): [number, null | Uint8Array] {
+  const cmdId = nextCmdId++;
+  fbs.Base.startBase(builder);
+  fbs.Base.addMsg(builder, msg);
+  fbs.Base.addMsgType(builder, msgType);
+  fbs.Base.addSync(builder, sync);
+  fbs.Base.addCmdId(builder, cmdId);
+  builder.finish(fbs.Base.endBase(builder));
+
+  return [cmdId, libfly.send(builder.asUint8Array())];
 }

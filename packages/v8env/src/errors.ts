@@ -1,4 +1,4 @@
-import { fly as fbs } from "./msg_generated";
+import * as fbs from "./msg_generated";
 
 // @internal
 export class DenoError<T extends fbs.ErrorKind> extends Error {

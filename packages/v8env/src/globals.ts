@@ -40,7 +40,7 @@ window.setInterval = timers.setInterval;
 // window.clearTimeout = timers.clearTimer;
 // window.clearInterval = timers.clearTimer;
 
-window.console = new Console(libfly.log);
+window.console = new Console(libfly.print);
 // window.TextEncoder = textEncoding.TextEncoder;
 // window.TextDecoder = textEncoding.TextDecoder;
 
