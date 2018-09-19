@@ -7,15 +7,15 @@
     "composite": true,
     "rootDir": "./src",
     "outDir": "./lib",
-    "lib": [
-      "es2017",
-      "dom"
-    ],
+    // "lib": [
+    //   "es2017",
+    //   "dom"
+    // ],
     // ease the transition to TypeScript, remove after 2018-09-01 plzthx
     "strict": false,
     "noImplicitAny": false,
     "noFallthroughCasesInSwitch": true,
-    // "noLib": true,
+    "noLib": true,
     // "noUnusedLocals": true,
     // "skipLibCheck": true,
     "types": []

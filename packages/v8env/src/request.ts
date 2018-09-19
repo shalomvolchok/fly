@@ -2,7 +2,9 @@
  * @module fetch
  */
 import CookieJar from './cookie_jar'
-import Body from './body_mixin'
+import FlyBody from './body_mixin'
+import { Request, Headers, RequestMode, RequestCredentials, RequestCache, RequestDestination, RequestRedirect, ReferrerPolicy, AbortSignal, RequestInit } from "./dom_types"
+import { FlyHeaders } from './headers';
 
 function byteUpperCase(s) {
 	return String(s)
@@ -18,31 +20,44 @@ function normalizeMethod(m) {
 	return m;
 }
 
+interface FlyRequestInit extends RequestInit {
+	remoteAddr?: string
+}
+
 /**
  * An HTTP request
  * @param {Blob|String} [body]
  * @param {Object} [init]
  * @mixes Body
  */
-export class Request extends Body {
+export class FlyRequest extends FlyBody implements Request {
 	method: string
 	url: string
 	referrer: string
-	mode: string
-	credentials: string
-	headers: Headers
+	mode: RequestMode
+	credentials: RequestCredentials
+	headers: FlyHeaders
 	remoteAddr: string
+	cache: RequestCache
+	destination: RequestDestination
+	integrity: string
+	isHistoryNavigation: boolean
+	isReloadNavigation: boolean
+	keepalive: boolean
+	redirect: RequestRedirect
+	referrerPolicy: ReferrerPolicy
+	signal: AbortSignal
 
 	private cookieJar: CookieJar
 
-	constructor(input, init?) {
+	constructor(input: string | Request, init?: FlyRequestInit) {
 		if (arguments.length < 1) throw TypeError('Not enough arguments');
 
 		let body = null
 		if (init && init.body) {
 			body = init.body
 		}
-		if (!body && input instanceof Request) {
+		if (!body && input instanceof FlyRequest) {
 			if (input.bodyUsed) throw TypeError();
 			// grab request body if we can
 			body = input.bodySource
@@ -76,20 +91,23 @@ export class Request extends Body {
 		// readonly attribute RequestCredentials credentials;
 		this.credentials = 'omit';
 
-		this.headers = new Headers()
-
-		if (input instanceof Request) {
+		if (input instanceof FlyRequest) {
 			if (input.bodyUsed) throw TypeError();
 			this.method = input.method;
 			this.url = input.url;
-			this.headers = new Headers(input.headers);
+			let headers = new FlyHeaders();
+			input.headers.forEach((value, key) => {
+				headers.append(key, value)
+			})
+			this.headers = headers;
 			this.credentials = input.credentials;
 			this.stream = input.stream;
 			this.remoteAddr = input.remoteAddr;
 			this.referrer = input.referrer;
 			this.mode = input.mode;
 		} else {
-			this.url = input
+			this.headers = new FlyHeaders({})
+			this.url = <string>input
 		}
 
 		init = Object(init);
@@ -107,7 +125,7 @@ export class Request extends Body {
 			 * Headers sent with the request.
 			 * @type {Headers}
 			 */
-			this.headers = new Headers(init.headers);
+			this.headers = new FlyHeaders(init.headers);
 		}
 
 		if ('credentials' in init &&
@@ -123,22 +141,24 @@ export class Request extends Body {
 	}
 
 	clone() {
-		if (this.bodyUsed)
-			throw new Error("body has already been used")
-		let body2 = this.bodySource
+		throw new Error("unimplemented")
+		return {} as FlyRequest
+		// if (this.bodyUsed)
+		// 	throw new Error("body has already been used")
+		// let body2 = this.bodySource
 
-		if (this.bodySource instanceof ReadableStream) {
-			const tees = this.body.tee()
-			this.stream = this.bodySource = tees[0]
-			body2 = tees[1]
-		}
-		const cloned = new Request(this.url, {
-			body: body2,
-			remoteAddr: this.remoteAddr,
-			method: this.method,
-			headers: this.headers,
-			credentials: this.credentials
-		})
-		return cloned
+		// // if (this.bodySource instanceof FlyBody) {
+		// // 	const tees = this.body.tee()
+		// // 	this.stream = this.bodySource = tees[0]
+		// // 	body2 = tees[1]
+		// // }
+		// const cloned = new FlyRequest(this.url, {
+		// 	body: body2,
+		// 	remoteAddr: this.remoteAddr,
+		// 	method: this.method,
+		// 	headers: this.headers,
+		// 	credentials: this.credentials
+		// })
+		// return cloned
 	}
 }

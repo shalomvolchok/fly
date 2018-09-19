@@ -1,29 +1,25 @@
 /** @module fly
  */
-import { parse as queryParse } from 'querystring'
-
+import { parse as queryParse } from 'query-string'
+import { Blob, FormData, Body, ReadableStream, ReadableStreamReader, BodyInit } from './dom_types';
+import { FlyBlob } from './blob';
+import FlyFormData from './form_data';
+import { ReadableStream as WhatWGReadableStream } from "@stardazed/streams";
 
 interface ReadableStreamController {
   enqueue(chunk: string | ArrayBuffer): void
   close(): void
 }
-/** @hidden */
-declare var ReadableStream: {
-  prototype: ReadableStream;
-  new(source: any | undefined): ReadableStream;
-};
-
 
 export type BodySource = Blob | BufferSource |
   FormData | URLSearchParams |
   ReadableStream | String
 
-
-export default class BodyMixin implements Body {
-  protected bodySource: BodySource
+export default class FlyBody implements Body {
+  protected bodySource: BodyInit
   protected stream: ReadableStream | null
 
-  constructor(obj: BodySource) {
+  constructor(obj: BodyInit) {
     validateBodyType(this, obj)
     this.bodySource = obj
     this.stream = null
@@ -33,11 +29,11 @@ export default class BodyMixin implements Body {
     if (this.stream) {
       return this.stream
     }
-    if (this.bodySource instanceof ReadableStream) {
-      this.stream = this.bodySource
+    if (this.bodySource instanceof WhatWGReadableStream) {
+      this.stream = this.bodySource as ReadableStream
     }
     if (typeof this.bodySource === "string") {
-      this.stream = new ReadableStream({
+      this.stream = new WhatWGReadableStream({
         start(controller: ReadableStreamController) {
           controller.enqueue(this.bodySource)
           controller.close()
@@ -55,17 +51,17 @@ export default class BodyMixin implements Body {
   }
 
   async blob(): Promise<Blob> {
-    return new Blob([await this.arrayBuffer()])
+    return new FlyBlob([await this.arrayBuffer()])
   }
 
   async formData(): Promise<FormData> {
-    if (this.bodySource instanceof FormData) {
+    if (this.bodySource instanceof FlyFormData) {
       return this.bodySource
     }
 
     const raw = await this.text()
     const query = queryParse(raw)
-    const formdata = new FormData()
+    const formdata = new FlyFormData()
     for (let key in query) {
       const value = query[key]
       if (Array.isArray(value)) {
@@ -110,9 +106,9 @@ export default class BodyMixin implements Body {
     } else if (typeof this.bodySource === 'string') {
       const enc = new TextEncoder()
       return <ArrayBuffer>enc.encode(this.bodySource).buffer
-    } else if (this.bodySource instanceof ReadableStream) {
-      return bufferFromStream(this.bodySource.getReader())
-    } else if (this.bodySource instanceof FormData) {
+    } else if (this.bodySource instanceof WhatWGReadableStream) {
+      return bufferFromStream((this.bodySource as ReadableStream).getReader())
+    } else if (this.bodySource instanceof FlyFormData) {
       const enc = new TextEncoder()
       return <ArrayBuffer>enc.encode(this.bodySource.toString()).buffer
     } else if (!this.bodySource) {
@@ -139,9 +135,9 @@ function validateBodyType(owner: any, bodySource: any) {
     return true
   } else if (typeof bodySource === 'string') {
     return true
-  } else if (bodySource instanceof ReadableStream) {
+  } else if (bodySource instanceof WhatWGReadableStream) {
     return true
-  } else if (bodySource instanceof FormData) {
+  } else if (bodySource instanceof FlyFormData) {
     return true
   } else if (!bodySource) {
     return true // null body is fine

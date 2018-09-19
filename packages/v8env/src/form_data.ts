@@ -2,13 +2,14 @@
  * @module fly
  * @private
  */
-import { stringify } from 'querystring'
+import { stringify } from 'query-string'
+import { FormData, FormDataEntryValue } from "./dom_types"
 
 /**
  * Class representing a fetch response.
  * @hidden
  */
-export default class FormData {
+export default class FlyFormData implements FormData {
   private _data: Map<string, string[]>
 
   constructor() {
@@ -32,6 +33,18 @@ export default class FormData {
 
   entries(): IterableIterator<[string, string[]]> {
     return this._data.entries()
+  }
+
+  forEach(
+    callbackfn: (
+      value: FormDataEntryValue,
+      key: string,
+      parent: FormData
+    ) => void,
+    // tslint:disable-next-line:no-any
+    thisArg?: any
+  ) {
+    throw new Error("unimplemented");
   }
 
   get(name: string): string | null {

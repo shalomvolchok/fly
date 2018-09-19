@@ -1,23 +1,25 @@
+// @types/text-encoding relies on lib.dom.d.ts for some interfaces. We do not
+// want to include lib.dom.d.ts (due to size) into fly's global type scope.
+// Therefore this hack: add a few of the missing interfaces in
+// @types/text-encoding to the global scope before importing.
+declare global {
+  type BufferSource = ArrayBufferView | ArrayBuffer;
 
-/**
- * @module fly
- * @private
- */
-import { sendSync } from './bridge'
+  interface TextDecodeOptions {
+    stream?: boolean;
+  }
 
-export class TextEncoder {
-  constructor() { }
-  encode(input) {
-    return sendSync("encode", input)
+  interface TextDecoderOptions {
+    fatal?: boolean;
+    ignoreBOM?: boolean;
+  }
+
+  interface TextDecoder {
+    readonly encoding: string;
+    readonly fatal: boolean;
+    readonly ignoreBOM: boolean;
+    decode(input?: BufferSource, options?: TextDecodeOptions): string;
   }
 }
 
-export class TextDecoder {
-  encoding: any
-  constructor(encoding) { this.encoding = encoding }
-  decode(input) {
-    let res = sendSync("decode", input, this.encoding)
-    console.log("decoder res:", typeof res, res.length, Array.isArray(res))
-    return res[0]
-  }
-}
+export { TextEncoder, TextDecoder } from "text-encoding";

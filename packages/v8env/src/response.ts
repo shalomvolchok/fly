@@ -2,24 +2,28 @@
  * @module fetch
  */
 import CookieJar from './cookie_jar'
-import Body from './body_mixin'
+import FlyBody from './body_mixin'
+import { FlyHeaders } from './headers';
+import { Response, Headers, ResponseType, ResponseInit, BodyInit } from './dom_types';
 
 function ushort(x) { return x & 0xFFFF; }
 
 /**
  * Class representing a fetch response.
  */
-export class Response extends Body {
-	headers: Headers
+export class FlyResponse extends FlyBody implements Response {
+	headers: FlyHeaders
 	status: number
 	url: string
 	ok: boolean
 	statusText: string
-	type: string
+	type: ResponseType
+	redirected: boolean
+	trailer: Promise<Headers>
 	private cookieJar: CookieJar
 
 	static redirect(url, status = 302) {
-		return new Response('', {
+		return new FlyResponse('', {
 			status,
 			headers: {
 				Location: url
@@ -27,7 +31,7 @@ export class Response extends Body {
 		})
 	}
 
-	constructor(body, init) {
+	constructor(body: BodyInit, init: ResponseInit) {
 		if (arguments.length < 1)
 			body = '';
 
@@ -39,7 +43,7 @@ export class Response extends Body {
 		 * @public
 		 * @type {Headers}
 		 */
-		this.headers = new Headers(init.headers);
+		this.headers = new FlyHeaders(init.headers);
 
 		// readonly attribute USVString url;
 		/**
@@ -47,7 +51,7 @@ export class Response extends Body {
 		 * @type {String}
 		 * @readonly
 		 */
-		this.url = init.url || '';
+		// this.url = init.url || '';
 
 		// readonly attribute unsigned short status;
 		var status = 'status' in init ? ushort(init.status) : 200;
@@ -105,14 +109,16 @@ export class Response extends Body {
 	}
 
 	clone() {
-		if (this.bodyUsed)
-			throw new Error("Body has already been used")
-		let body2 = this.bodySource
-		if (this.bodySource instanceof ReadableStream) {
-			const tees = this.body.tee()
-			this.stream = this.bodySource = tees[0]
-			body2 = tees[1]
-		}
-		return new Response(body2, this)
+		// if (this.bodyUsed)
+		// 	throw new Error("Body has already been used")
+		// let body2 = this.bodySource
+		// if (this.bodySource instanceof ReadableStream) {
+		// 	const tees = this.body.tee()
+		// 	this.stream = this.bodySource = tees[0]
+		// 	body2 = tees[1]
+		// }
+		// return new Response(body2, this)
+		throw new Error("unimplemented")
+		return {} as Response
 	}
 }

@@ -544,6 +544,10 @@
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.stat/-/fs.stat-1.1.1.tgz#53f349bb986ab273d601175aa1b25a655ab90ee3"
 
+"@stardazed/streams@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@stardazed/streams/-/streams-1.0.6.tgz#b69037f6b1c818c07325755adaa30cde199d65ee"
+
 "@types/better-sqlite3@^3.1.3":
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/@types/better-sqlite3/-/better-sqlite3-3.1.3.tgz#cd74eb09393ccc06014b8d9bae4f8d5e4b99c5fb"
@@ -642,6 +646,10 @@
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@types/promise.prototype.finally/-/promise.prototype.finally-2.0.2.tgz#68fefb8f0e23f21893a33740c931c79f44be3499"
 
+"@types/query-string@^6.1.0":
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/@types/query-string/-/query-string-6.1.0.tgz#5f721f9503bdf517d474c66cf4423da5dd2d5698"
+
 "@types/redis@^2.8.1":
   version "2.8.6"
   resolved "https://registry.yarnpkg.com/@types/redis/-/redis-2.8.6.tgz#3674d07a13ad76bccda4c37dc3909e4e95757e7e"
@@ -668,6 +676,10 @@
   resolved "https://registry.yarnpkg.com/@types/tar-fs/-/tar-fs-1.16.1.tgz#6e3fba276c173e365ae91e55f7b797a0e64298e5"
   dependencies:
     "@types/node" "*"
+
+"@types/text-encoding@0.0.33":
+  version "0.0.33"
+  resolved "https://registry.yarnpkg.com/@types/text-encoding/-/text-encoding-0.0.33.tgz#67618d2da2cb6055c16c7caa2e967c1c6d1e7600"
 
 "@types/uglify-js@*":
   version "3.0.3"
@@ -7116,6 +7128,13 @@ qs@~6.5.2:
   version "6.5.2"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.5.2.tgz#cb3ae806e8740444584ef154ce8ee98d403f3e36"
 
+query-string@^6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/query-string/-/query-string-6.1.0.tgz#01e7d69f6a0940dac67a937d6c6325647aa4532a"
+  dependencies:
+    decode-uri-component "^0.2.0"
+    strict-uri-encode "^2.0.0"
+
 querystring-es3@^0.2.0, querystring-es3@~0.2.0:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/querystring-es3/-/querystring-es3-0.2.1.tgz#9ec61f79049875707d69414596fd907a4d711e73"
@@ -8041,6 +8060,10 @@ stream-to-promise@^2.2.0:
     end-of-stream "~1.1.0"
     stream-to-array "~2.3.0"
 
+strict-uri-encode@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/strict-uri-encode/-/strict-uri-encode-2.0.0.tgz#b9c7330c7042862f6b142dc274bbcc5866ce3546"
+
 string-length@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/string-length/-/string-length-2.0.0.tgz#d40dbb686a3ace960c1cffca562bf2c45f8363ed"
@@ -8308,6 +8331,10 @@ test-exclude@^4.2.1:
     object-assign "^4.1.0"
     read-pkg-up "^1.0.1"
     require-main-filename "^1.0.1"
+
+text-encoding@0.6.4:
+  version "0.6.4"
+  resolved "https://registry.yarnpkg.com/text-encoding/-/text-encoding-0.6.4.tgz#e399a982257a276dae428bb92845cb71bdc26d19"
 
 text-extensions@^1.0.0:
   version "1.7.0"

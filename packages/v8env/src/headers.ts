@@ -1,169 +1,116 @@
-/**
- * @module fly
- * @private
- */
-import { logger } from './logger'
+import { Headers, HeadersInit } from "./dom_types";
+import { assert } from "./util";
 
-/**
- * @class
- * @param {Object} [init]
- */
-export default function Headers(init) {
-	Object.defineProperty(this, "_headerList", {
-		enumerable: false,
-		value: []
-	})
-	if (init) {
-		fill(this, init)
-	}
+interface Header {
+	name: string;
+	value: string;
 }
 
-// interface Headers
-Headers.prototype = {
-	// void append(ByteString name, ByteString value);
-	/**
-	 * Adds a header. Does not overwrite existing headers with same name
-	 * @param {String} name
-	 * @param {String} value
-	 */
-	append: function append(name, value) {
-		name = name.toLowerCase();
-		this._headerList.push([name, value]);
-	},
+export class FlyHeaders implements Headers {
+	private readonly headerList: Header[] = [];
+	length: number
 
-	/** Deletes header(s) by name
-	 * @param {String} name */
-	'delete': function delete_(name) {
-		name = name.toLowerCase();
-		var index = 0;
-		while (index < this._headerList.length) {
-			if (this._headerList[index][0] === name)
-				this._headerList.splice(index, 1);
-			else
-				++index;
+	constructor(init?: HeadersInit) {
+		if (init) {
+			this._fill(init);
 		}
-	},
+		this.length = this.headerList.length
+	}
 
-	/**
-	 * Gets first header by name
-	 * @param {String} name
-	 * @returns {String?}
-	 */
-	get: function get(name) {
-		name = name.toLowerCase();
-		const raw = []
-		for (var index = 0; index < this._headerList.length; ++index) {
-			if (this._headerList[index][0] === name)
-				raw.push(this._headerList[index][1])
+	private _append(header: Header): void {
+		// TODO(qti3e) Check header based on the fetch spec.
+		this._appendToHeaderList(header);
+	}
+
+	private _appendToHeaderList(header: Header): void {
+		const lowerCaseName = header.name.toLowerCase();
+		for (let i = 0; i < this.headerList.length; ++i) {
+			if (this.headerList[i].name.toLowerCase() === lowerCaseName) {
+				header.name = this.headerList[i].name;
+			}
 		}
-		if (raw.length > 0) return raw.join(", ")
-		return null;
-	},
+		this.headerList.push(header);
+	}
 
-	/**
-	 * Gets all headers by name
-	 * @param {String} name
-	 * @returns {sequence<String>}
-	 */
-	getAll: function getAll(name) {
-		name = name.toLowerCase();
-		var sequence = [];
-		for (var index = 0; index < this._headerList.length; ++index) {
-			if (this._headerList[index][0] === name)
-				sequence.push(this._headerList[index][1]);
-		}
-		return sequence;
-	},
-
-	/**
-	 * Checks for existence of header by name
-	 * @param {String} name
-	 * @returns {boolean}
-	 */
-	has: function has(name) {
-		name = name.toLowerCase();
-		for (var index = 0; index < this._headerList.length; ++index) {
-			if (this._headerList[index][0] === name)
-				return true;
-		}
-		return false;
-	},
-
-	/**
-	 * Sets a header by name. Overwrites existing headers with same name
-	 * @param {String} name
-	 * @param {String} value
-	 */
-	set: function set(name, value) {
-		name = name.toLowerCase();
-		for (var index = 0; index < this._headerList.length; ++index) {
-			if (this._headerList[index][0] === name) {
-				this._headerList[index++][1] = value;
-				while (index < this._headerList.length) {
-					if (this._headerList[index][0] === name)
-						this._headerList.splice(index, 1);
-					else
-						++index;
+	private _fill(init: HeadersInit): void {
+		if (Array.isArray(init)) {
+			for (let i = 0; i < init.length; ++i) {
+				const header = init[i];
+				if (header.length !== 2) {
+					throw new TypeError("Failed to construct 'Headers': Invalid value");
 				}
-				return;
+				this._append({
+					name: header[0],
+					value: header[1]
+				});
+			}
+		} else {
+			for (const key in init) {
+				this._append({
+					name: key,
+					value: init[key]
+				});
 			}
 		}
-		this._headerList.push([name, value]);
-	},
-
-	/**
-	 * @returns {Object<string,string[]>}
-	 */
-	toJSON: function toJSON() {
-		const jsonHeaders = {}
-		for (let h of this._headerList) {
-			if (h[0] === 'host') {
-				jsonHeaders[h[0]] = this.get(h[0])
-				continue
-			}
-
-			logger.debug("setting", h[0], this.getAll(h[0]))
-			jsonHeaders[h[0]] = this.getAll(h[0])
-		}
-		return jsonHeaders
 	}
-};
-Headers.prototype[Symbol.iterator] = function () {
-	return new HeadersIterator(this);
-};
 
-function HeadersIterator(headers) {
-	this._headers = headers;
-	this._index = 0;
-}
-HeadersIterator.prototype = {};
-HeadersIterator.prototype.next = function () {
-	if (this._index >= this._headers._headerList.length)
-		return { value: undefined, done: true };
-	return { value: this._headers._headerList[this._index++], done: false };
-};
-HeadersIterator.prototype[Symbol.iterator] = function () { return this; };
+	append(name: string, value: string): void {
+		this._appendToHeaderList({ name, value });
+	}
 
-function fill(headers, init) {
-	if (init instanceof Headers) {
-		init._headerList.forEach(function (header) {
-			headers.append(header[0], header[1]);
-		});
-	} else if (Array.isArray(init)) {
-		init.forEach(function (header) {
-			if (!Array.isArray(header) || header.length !== 2) throw TypeError();
-			headers.append(header[0], header[1]);
-		});
-	} else {
-		init = Object(init);
-		for (const name of Object.keys(init)) {
-			if (Array.isArray(init[name])) {
-				init[name].forEach(function (v) {
-					headers.append(name, v);
-				})
-			} else {
-				headers.set(name, init[name]);
+	delete(name: string): void {
+		assert(false, "Implement me");
+	}
+	get(name: string): string | null {
+		for (const header of this.headerList) {
+			if (header.name.toLowerCase() === name.toLowerCase()) {
+				return header.value;
 			}
 		}
+		return null;
+	}
+	has(name: string): boolean {
+		assert(false, "Implement me");
+		return false;
+	}
+
+	set(name: string, value: string): void {
+		assert(false, "Implement me");
+	}
+
+	forEach(
+		callbackfn: (value: string, key: string, parent: Headers) => void,
+		// tslint:disable-next-line:no-any
+		thisArg?: any
+	): void {
+		const it = this[Symbol.iterator]();
+		let cur = it.next();
+		while (!cur.done) {
+			const { name, value } = cur.value;
+			callbackfn(value, name, this);
+			cur = it.next();
+		}
+	}
+
+	[Symbol.iterator]() {
+		return new FlyHeadersIterator(this.headerList)
+	}
+}
+
+class FlyHeadersIterator implements Iterator<Header> {
+	headers: Header[]
+	private index: number
+	constructor(headers: Header[]) {
+		this.headers = headers;
+		this.index = 0;
+	}
+
+	next(): IteratorResult<Header> {
+		if (this.index >= this.headers.length) { return { value: undefined, done: true } }
+		return { value: this.headers[this.index++], done: false }
+	}
+
+	[Symbol.iterator]() {
+		return this
 	}
 }
