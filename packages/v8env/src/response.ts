@@ -5,7 +5,7 @@ import CookieJar from './cookie_jar'
 import FlyBody from './body_mixin'
 import { FlyHeaders } from './headers';
 import { Response, Headers, ResponseType, ResponseInit, BodyInit } from './dom_types';
-import { ReadableStream, ReadableStreamTee } from '@stardazed/streams';
+import { ReadableStream } from '@stardazed/streams';
 
 function ushort(x) { return x & 0xFFFF; }
 
@@ -114,7 +114,7 @@ export class FlyResponse extends FlyBody implements Response {
 			throw new Error("Body has already been used")
 
 		if (this.body instanceof ReadableStream) {
-			const [b1, b2] = ReadableStreamTee(this.body, true)
+			const [b1, b2] = this.body.tee()
 			this.body = b1
 			return new Response(b2, this)
 		}
