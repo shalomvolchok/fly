@@ -3,7 +3,7 @@
 // Therefore this hack: add a few of the missing interfaces in
 // @types/text-encoding to the global scope before importing.
 declare global {
-  type BufferSource = ArrayBufferView | ArrayBuffer;
+  type BufferSource = ArrayBufferView | ArrayBufferLike;
 
   interface TextDecodeOptions {
     stream?: boolean;

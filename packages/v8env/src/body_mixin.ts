@@ -17,7 +17,7 @@ export type BodySource = Blob | BufferSource |
 
 export default class FlyBody implements Body {
   protected bodySource: BodyInit
-  protected stream: ReadableStream | null
+  protected stream: WhatWGReadableStream | null
 
   constructor(obj: BodyInit) {
     validateBodyType(this, obj)
@@ -25,12 +25,12 @@ export default class FlyBody implements Body {
     this.stream = null
   }
 
-  get body(): ReadableStream | null {
+  get body(): WhatWGReadableStream | null {
     if (this.stream) {
       return this.stream
     }
     if (this.bodySource instanceof WhatWGReadableStream) {
-      this.stream = this.bodySource as ReadableStream
+      this.stream = this.bodySource
     }
     if (typeof this.bodySource === "string") {
       this.stream = new WhatWGReadableStream({
@@ -41,6 +41,10 @@ export default class FlyBody implements Body {
       })
     }
     return this.stream
+  }
+
+  set body(value: WhatWGReadableStream) {
+    this.stream = value
   }
 
   get bodyUsed(): boolean {
@@ -145,7 +149,7 @@ function validateBodyType(owner: any, bodySource: any) {
   throw new Error(`Bad ${owner.constructor.name} body type: ${bodySource.constructor.name}`)
 }
 
-function bufferFromStream(stream: ReadableStreamReader): Promise<ArrayBuffer> {
+export function bufferFromStream(stream: ReadableStreamReader): Promise<ArrayBuffer> {
   return new Promise((resolve, reject) => {
     let parts: Array<Uint8Array> = [];
     let encoder = new TextEncoder();
@@ -161,6 +165,8 @@ function bufferFromStream(stream: ReadableStreamReader): Promise<ArrayBuffer> {
             parts.push(encoder.encode(value))
           } else if (value instanceof ArrayBuffer) {
             parts.push(new Uint8Array(value))
+          } else if (value instanceof Uint8Array) {
+            parts.push(value)
           } else if (!value) {
             // noop for undefined
           } else {

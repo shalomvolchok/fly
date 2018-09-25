@@ -5,6 +5,7 @@ import CookieJar from './cookie_jar'
 import FlyBody from './body_mixin'
 import { FlyHeaders } from './headers';
 import { Response, Headers, ResponseType, ResponseInit, BodyInit } from './dom_types';
+import { ReadableStream, ReadableStreamTee } from '@stardazed/streams';
 
 function ushort(x) { return x & 0xFFFF; }
 
@@ -31,7 +32,7 @@ export class FlyResponse extends FlyBody implements Response {
 		})
 	}
 
-	constructor(body: BodyInit, init: ResponseInit) {
+	constructor(body: BodyInit, init: ResponseInit | FlyResponse) {
 		if (arguments.length < 1)
 			body = '';
 
@@ -109,16 +110,14 @@ export class FlyResponse extends FlyBody implements Response {
 	}
 
 	clone() {
-		// if (this.bodyUsed)
-		// 	throw new Error("Body has already been used")
-		// let body2 = this.bodySource
-		// if (this.bodySource instanceof ReadableStream) {
-		// 	const tees = this.body.tee()
-		// 	this.stream = this.bodySource = tees[0]
-		// 	body2 = tees[1]
-		// }
-		// return new Response(body2, this)
-		throw new Error("unimplemented")
-		return {} as Response
+		if (this.bodyUsed)
+			throw new Error("Body has already been used")
+
+		if (this.body instanceof ReadableStream) {
+			const [b1, b2] = ReadableStreamTee(this.body, true)
+			this.body = b1
+			return new Response(b2, this)
+		}
+		return new Response(null, this)
 	}
 }

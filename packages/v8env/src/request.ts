@@ -21,7 +21,7 @@ function normalizeMethod(m) {
 }
 
 interface FlyRequestInit extends RequestInit {
-	remoteAddr?: string
+	remoteAddr?: string,
 }
 
 /**
@@ -95,11 +95,7 @@ export class FlyRequest extends FlyBody implements Request {
 			if (input.bodyUsed) throw TypeError();
 			this.method = input.method;
 			this.url = input.url;
-			let headers = new FlyHeaders();
-			input.headers.forEach((value, key) => {
-				headers.append(key, value)
-			})
-			this.headers = headers;
+			this.headers = new FlyHeaders(input.headers);
 			this.credentials = input.credentials;
 			this.stream = input.stream;
 			this.remoteAddr = input.remoteAddr;

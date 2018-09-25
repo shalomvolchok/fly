@@ -18,32 +18,52 @@
  */
 
 /** */
-declare var bridge: any
+import { sendSync, sendAsync, streams } from '../../bridge'
+import * as fbs from "../../msg_generated";
+import { flatbuffers } from "flatbuffers";
+
 export interface CacheSetOptions {
   ttl?: number;
   tags?: string[];
   onlyIfEmpty?: boolean;
 }
 
-
 /**
  * Get an ArrayBuffer value (or null) from the cache
  * @param key The key to get
  * @return Raw bytes stored for provided key or null if empty.
  */
-export function get(key: string) {
-  return new Promise<ArrayBuffer | null>(function cacheGetPromise(resolve, reject) {
-    bridge.dispatch(
-      "flyCacheGet",
-      key,
-      function cacheGetCallback(err: string | null | undefined, value?: ArrayBuffer) {
-        if (err != null) {
-          reject(err)
-          return
+export function get(key: string): Promise<ArrayBufferLike | null> {
+  return getStream(key).then(stream => {
+    if (!stream)
+      return null
+    return bufferFromStream(stream.getReader())
+  })
+}
+
+export function getStream(key: string): Promise<ReadableStream | null> {
+  const fbb = new flatbuffers.Builder()
+  const keyFbs = fbb.createString(key);
+  fbs.CacheGet.startCacheGet(fbb);
+  fbs.CacheGet.addKey(fbb, keyFbs);
+  return sendAsync(fbb, fbs.Any.CacheGet, fbs.CacheGet.endCacheGet(fbb)).then(baseMsg => {
+    const msg = new fbs.CacheGetReady();
+    baseMsg.msg(msg);
+    const id = msg.id()
+    return msg.stream() ?
+      new WhatWGReadableStream({
+        start(controller) {
+          console.log("starting stream!");
+          streams.set(msg.id(), (chunkMsg: fbs.StreamChunk, raw: Uint8Array) => {
+            // console.log("got chunk, done?", chunkMsg.done());
+            controller.enqueue(raw);
+            if (chunkMsg.done()) {
+              controller.close()
+              streams.delete(chunkMsg.id())
+            }
+          })
         }
-        resolve(value)
-      }
-    )
+      }) : null
   })
 }
 
@@ -53,14 +73,12 @@ export function get(key: string) {
  * @param key The key to get
  * @returns Data stored at the key, or null if none exists
  */
-export async function getString(key: string) {
-  const buf = await get(key)
-  if (!buf) { return null }
-  try {
+export function getString(key: string): Promise<string | null> {
+  return get(key).then(buf => {
+    if (!buf)
+      return null
     return new TextDecoder("utf-8").decode(buf)
-  } catch (err) {
-    return null
-  }
+  })
 }
 
 /**
@@ -68,30 +86,30 @@ export async function getString(key: string) {
  * @param keys list of keys to retrieve
  * @returns List of results in the same order as the provided keys
  */
-export function getMulti(keys: string[]): Promise<(ArrayBuffer | null)[]> {
-  return new Promise<(ArrayBuffer | null)[]>(function cacheGetMultiPromise(resolve, reject) {
-    bridge.dispatch(
-      "flyCacheGetMulti",
-      JSON.stringify(keys),
-      function cacheGetMultiCallback(err: string | null | undefined, ...values: (ArrayBuffer | null)[]) {
-        if (err != null) {
-          reject(err)
-          return
-        }
-        resolve(values)
-      })
-  })
-}
+// export function getMulti(keys: string[]): Promise<(ArrayBuffer | null)[]> {
+//   return new Promise<(ArrayBuffer | null)[]>(function cacheGetMultiPromise(resolve, reject) {
+//     bridge.dispatch(
+//       "flyCacheGetMulti",
+//       JSON.stringify(keys),
+//       function cacheGetMultiCallback(err: string | null | undefined, ...values: (ArrayBuffer | null)[]) {
+//         if (err != null) {
+//           reject(err)
+//           return
+//         }
+//         resolve(values)
+//       })
+//   })
+// }
 
 /**
  * Get multiple string values from the cache
  * @param keys list of keys to retrieve
  * @returns list of results in the same order as the provided keys
  */
-export async function getMultiString(keys: string[]) {
-  const raw = await getMulti(keys)
-  return raw.map((b) => b ? new TextDecoder("utf-8").decode(b) : null)
-}
+// export async function getMultiString(keys: string[]) {
+//   const raw = await getMulti(keys)
+//   return raw.map((b) => b ? new TextDecoder("utf-8").decode(b) : null)
+// }
 
 /**
  * Sets a value at the specified key, with an optional ttl
@@ -100,18 +118,58 @@ export async function getMultiString(keys: string[]) {
  * @param ttl Time to live (in seconds)
  * @returns true if the set was successful
  */
-export function set(key: string, value: string | ArrayBuffer, options?: CacheSetOptions | number) {
-  if (typeof value !== "string" && !(value instanceof ArrayBuffer)) {
-    throw new Error("Cache values must be either a string or array buffer")
-  }
-  return new Promise<boolean>(function cacheSetPromise(resolve, reject) {
-    bridge.dispatch("flyCacheSet", key, value, options && JSON.stringify(options), function cacheSetCallback(err: string | null, ok?: boolean) {
-      if (err != null) {
-        reject(err)
-        return
+export function set(key: string, value: string | ArrayBuffer | ArrayBufferView | WhatWGReadableStream, options?: CacheSetOptions | number): Promise<boolean> {
+  // if (typeof value !== "string" && !(value instanceof ArrayBuffer)) {
+  //   throw new Error("Cache values must be either a string or array buffer")
+  // }
+
+  const fbb = new flatbuffers.Builder()
+  const keyFbb = fbb.createString(key)
+  fbs.CacheSet.startCacheSet(fbb);
+  fbs.CacheSet.addKey(fbb, keyFbb);
+  return sendAsync(fbb, fbs.Any.CacheSet, fbs.CacheSet.endCacheSet(fbb)).then(async baseMsg => {
+    console.log("got cache set ready!");
+    let msg = new fbs.CacheSetReady()
+    baseMsg.msg(msg);
+    let id = msg.id()
+    console.log("id:", id)
+    if (value instanceof WhatWGReadableStream) {
+      console.log("got a stream");
+      let reader = value.getReader();
+      let cur = await reader.read()
+      let done = false
+      while (!done) {
+        const fbb = new flatbuffers.Builder()
+        fbs.StreamChunk.startStreamChunk(fbb)
+        fbs.StreamChunk.addId(fbb, id);
+        fbs.StreamChunk.addDone(fbb, cur.done);
+        sendSync(fbb, fbs.Any.StreamChunk, fbs.StreamChunk.endStreamChunk(fbb), cur.value)
+        if (cur.done)
+          done = true
+        else
+          cur = await reader.read()
       }
-      resolve(ok)
-    })
+    } else {
+      console.log("not a readable stream I guess!");
+      const fbb = new flatbuffers.Builder()
+      let buf: ArrayBufferView;
+      if (typeof value === "string") {
+        console.log("string")
+        buf = new TextEncoder().encode(value)
+      } else if (value instanceof ArrayBuffer) {
+        console.log("array buf")
+        buf = new Uint8Array(value)
+      } else {
+        console.log("array buf view")
+        buf = value
+      }
+      fbs.StreamChunk.startStreamChunk(fbb)
+      fbs.StreamChunk.addId(fbb, id);
+      fbs.StreamChunk.addDone(fbb, true);
+      sendSync(fbb, fbs.Any.StreamChunk, fbs.StreamChunk.endStreamChunk(fbb), buf)
+      console.log("sent, done.");
+    }
+    return true
   })
 }
 
@@ -121,17 +179,17 @@ export function set(key: string, value: string | ArrayBuffer, options?: CacheSet
  * @param ttl Expiration time remaining in seconds
  * @returns true if ttl was successfully updated
  */
-export function expire(key: string, ttl: number) {
-  return new Promise<boolean>(function cacheSetPromise(resolve, reject) {
-    bridge.dispatch("flyCacheExpire", key, ttl, function cacheSetCallback(err: string | null, ok?: boolean) {
-      if (err != null) {
-        reject(err)
-        return
-      }
-      resolve(ok)
-    })
-  })
-}
+// export function expire(key: string, ttl: number) {
+//   return new Promise<boolean>(function cacheSetPromise(resolve, reject) {
+//     bridge.dispatch("flyCacheExpire", key, ttl, function cacheSetCallback(err: string | null, ok?: boolean) {
+//       if (err != null) {
+//         reject(err)
+//         return
+//       }
+//       resolve(ok)
+//     })
+//   })
+// }
 
 /**
  * Replace tags for a given cache key
@@ -139,39 +197,39 @@ export function expire(key: string, ttl: number) {
  * @param tags Tags to apply to key
  * @returns true if tags were successfully updated
  */
-export function setTags(key: string, tags: string[]) {
-  return new Promise<boolean>(function cacheSetTagsPromise(resolve, reject) {
-    bridge.dispatch("flyCacheSetTags", key, tags, function cacheSetTagsCallback(err: string | null, ok?: boolean) {
-      if (err != null) {
-        reject(err)
-        return
-      }
-      resolve(ok)
-    })
-  })
-}
+// export function setTags(key: string, tags: string[]) {
+//   return new Promise<boolean>(function cacheSetTagsPromise(resolve, reject) {
+//     bridge.dispatch("flyCacheSetTags", key, tags, function cacheSetTagsCallback(err: string | null, ok?: boolean) {
+//       if (err != null) {
+//         reject(err)
+//         return
+//       }
+//       resolve(ok)
+//     })
+//   })
+// }
 
 /**
  * Purges all cache entries with the given tag
  * @param tag Tag to purge
  */
-export function purgeTag(tag: string) {
-  return new Promise<string[]>(function cachePurgeTagsPromise(resolve, reject) {
-    bridge.dispatch("flyCachePurgeTags", tag, function cachePurgeTagsCallback(err: string | null, keys?: string) {
-      if (err != null || !keys) {
-        reject(err || "weird result")
-        return
-      }
-      const result = JSON.parse(keys)
-      if (result instanceof Array) {
-        resolve(<string[]>result)
-        return
-      } else {
-        reject("got back gibberish")
-      }
-    })
-  })
-}
+// export function purgeTag(tag: string) {
+//   return new Promise<string[]>(function cachePurgeTagsPromise(resolve, reject) {
+//     bridge.dispatch("flyCachePurgeTags", tag, function cachePurgeTagsCallback(err: string | null, keys?: string) {
+//       if (err != null || !keys) {
+//         reject(err || "weird result")
+//         return
+//       }
+//       const result = JSON.parse(keys)
+//       if (result instanceof Array) {
+//         resolve(<string[]>result)
+//         return
+//       } else {
+//         reject("got back gibberish")
+//       }
+//     })
+//   })
+// }
 
 
 /**
@@ -179,42 +237,46 @@ export function purgeTag(tag: string) {
  * @param key Key to delete
  * @returns true if delete was successful
  */
-export function del(key: string) {
-  return new Promise<boolean>(function cacheDelPromise(resolve, reject) {
-    bridge.dispatch("flyCacheDel", key, function cacheDelCallback(err: string | null, ok?: boolean) {
-      if (err != null) {
-        reject(err)
-        return
-      }
-      resolve(ok)
-    })
-  })
-}
+// export function del(key: string) {
+//   return new Promise<boolean>(function cacheDelPromise(resolve, reject) {
+//     bridge.dispatch("flyCacheDel", key, function cacheDelCallback(err: string | null, ok?: boolean) {
+//       if (err != null) {
+//         reject(err)
+//         return
+//       }
+//       resolve(ok)
+//     })
+//   })
+// }
 
 /**
  * A library for caching/retrieving Response objects
  * 
  * See {@link fly/cache/response}
  */
-export { default as responseCache } from "./response"
+// export { default as responseCache } from "./response"
 
 /**
  * API for sending global cache notifications
  * 
  * See {@link fly/cache/global} 
  */
-import { default as global } from "./global"
+// import { default as global } from "./global"
+import { ReadableStream as WhatWGReadableStream } from '@stardazed/streams';
+import { bufferFromStream } from '../../body_mixin';
+import { ReadableStream } from '../../dom_types';
 
 const cache = {
   get,
   getString,
-  getMulti,
-  getMultiString,
+  getStream,
+  // getMulti,
+  // getMultiString,
   set,
-  expire,
-  del,
-  setTags,
-  purgeTag,
-  global
+  // expire,
+  // del,
+  // setTags,
+  // purgeTag,
+  // global
 }
 export default cache

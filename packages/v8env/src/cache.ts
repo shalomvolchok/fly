@@ -2,11 +2,11 @@
  * @module fly
  * @private
  */
-import { logger } from './logger'
-import * as CachePolicy from 'http-cache-semantics'
-
-declare var fly: any
-declare var cache: any
+// import { console } from './console'
+import CachePolicy from 'http-cache-semantics'
+import { Request, Response } from './dom_types';
+import { FlyResponse } from './response';
+import flyCache from "./fly/cache";
 
 /**
  * export:
@@ -15,74 +15,91 @@ declare var cache: any
  * 	put(req, res): void
  */
 
-export default {
-	async match(req) {
-		const hashed = hashData(req)
+const cache = {
+	async match(req: Request) {
+		const hashed = await hashData(req)
 		let key = "httpcache:policy:" + hashed // first try with no vary variant
 		for (let i = 0; i < 5; i++) {
-			const policyRaw = await fly.cache.getString(key)
-			logger.debug("Got policy:", key, policyRaw)
+			const policyRaw = await flyCache.getString(key)
+			console.debug("Got policy:", key, policyRaw)
 			if (!policyRaw) {
 				return undefined
 			}
-			const policy = CachePolicy.fromObject(JSON.parse(policyRaw))
+			try {
+				const policy = CachePolicy.fromObject(JSON.parse(policyRaw))
 
-			// if it fits i sits
-			if (policy.satisfiesWithoutRevalidation(req)) {
-				const headers = policy.responseHeaders()
-				const bodyKey = "httpcache:body:" + hashed
+				// if it fits i sits
+				console.log("policy satisfied without revalidation?", policy.satisfiesWithoutRevalidation(req))
+				if (policy.satisfiesWithoutRevalidation(req)) {
+					const headers = policy.responseHeaders()
+					const bodyKey = "httpcache:body:" + hashed
 
-				const body = await fly.cache.get(bodyKey)
-				logger.debug("Got body", body.constructor.name, body.byteLength)
-				return new Response(body, { status: policy._status, headers: headers })
-				//}else if(policy._headers){
-				// TODO: try a new vary based key
-				// policy._headers has the varies / vary values
-				// key = hashData(req, policy._headers)
-				//return undefined
-			} else {
-				return undefined
+					let body = await flyCache.getStream(bodyKey)
+					console.log("status:", policy._status, "headers:", headers)
+					return new FlyResponse(body, { status: policy._status, headers: headers })
+					//}else if(policy._headers){
+					// TODO: try a new vary based key
+					// policy._headers has the varies / vary values
+					// key = hashData(req, policy._headers)
+					//return undefined
+				} else {
+					return undefined
+				}
+			} catch (e) {
+				console.log("error!", e.message, e.stack)
+				throw e
 			}
+			return undefined // no matches found
 		}
-		return undefined // no matches found
 	},
-	async add(req) {
-		logger.debug("cache add")
+	add(req: Request) {
+		console.debug("cache add")
 
-		const res = await fetch(req)
-		return await cache.put(req, res)
+		return fetch(req).then(res => {
+			return cache.put(req, res)
+		})
 	},
-	async put(req, res) {
+	async put(req: Request, res: FlyResponse) {
 		const resHeaders = {}
-		const key = hashData(req)
+		const key = await hashData(req)
+		console.log("after data hashed", key);
 
 		for (const h of res.headers) {
-			if (h[0] === 'set-cookie')
-				resHeaders[h[0]] = h[1]
-			else
-				resHeaders[h[0]] = h[1].join && h[1].join(',') || h[1]
+			// if (h.name === 'set-cookie')
+			resHeaders[h.name] = h.value
+			// else
+			// 	resHeaders[h.name] = h[1].join && h[1].join(',') || h[1]
 		}
+		console.log("did headers")
 		let cacheableRes = {
 			status: res.status,
 			headers: resHeaders,
 		}
+		console.log("cacheable res:", cacheableRes)
 		const policy = new CachePolicy({
 			url: req.url,
 			method: req.method,
 			headers: req.headers || {},
 		}, cacheableRes)
 
+		console.log("made policy")
+
 		const ttl = Math.floor(policy.timeToLive() / 1000)
 		if (policy.storable() && ttl > 0) {
-			logger.debug("Setting cache policy:", "httpcache:policy:" + key)
-			await fly.cache.set("httpcache:policy:" + key, JSON.stringify(policy.toObject()), ttl)
-			const respBody = await res.arrayBuffer()
-			await fly.cache.set("httpcache:body:" + key, respBody, ttl)
+			console.debug("Setting cache policy:", "httpcache:policy:" + key)
+			await flyCache.set("httpcache:policy:" + key, JSON.stringify(policy.toObject()), ttl)
+			console.log("base policy cached")
+			// const respBody = await res.arrayBuffer()
+			await flyCache.set("httpcache:body:" + key, res.body, ttl)
+			console.log("response cached");
 		}
+		console.log("cache set!")
 	}
 }
 
-function hashData(req, vary?) {
+export default cache;
+
+function hashData(req: Request, vary?) {
 	let toHash = ``
 
 	const u = normalizeURL(req.url)
@@ -93,8 +110,11 @@ function hashData(req, vary?) {
 	// TODO: cacheable cookies
 	// TODO: cache version for grand busting
 
-	logger.debug("hashData", toHash)
-	return crypto.subtle.digestSync("sha-1", toHash, "hex")
+	console.debug(`hashData "${toHash}"`)
+	var buffer = new TextEncoder("utf-8").encode(toHash);
+	return crypto.subtle.digest("SHA-1", buffer).then(hash => {
+		return hex(hash)
+	}) // TODO: SHA-1, not 256
 }
 
 function normalizeURL(u) {
@@ -105,4 +125,8 @@ function normalizeURL(u) {
 	url.search = sp.toString()
 
 	return url
+}
+
+function hex(buff) {
+	return [].map.call(new Uint8Array(buff), b => ('00' + b.toString(16)).slice(-2)).join('');
 }

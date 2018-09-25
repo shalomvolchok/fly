@@ -6,11 +6,13 @@ interface Header {
 	value: string;
 }
 
+export type FlyHeadersInit = HeadersInit | FlyHeaders
+
 export class FlyHeaders implements Headers {
 	private readonly headerList: Header[] = [];
 	length: number
 
-	constructor(init?: HeadersInit) {
+	constructor(init?: FlyHeadersInit) {
 		if (init) {
 			this._fill(init);
 		}
@@ -32,8 +34,12 @@ export class FlyHeaders implements Headers {
 		this.headerList.push(header);
 	}
 
-	private _fill(init: HeadersInit): void {
-		if (Array.isArray(init)) {
+	private _fill(init: FlyHeadersInit): void {
+		if (init instanceof FlyHeaders) {
+			init.forEach((value, name) => {
+				this._append({ name: name, value: value })
+			})
+		} else if (Array.isArray(init)) {
 			for (let i = 0; i < init.length; ++i) {
 				const header = init[i];
 				if (header.length !== 2) {
@@ -59,7 +65,11 @@ export class FlyHeaders implements Headers {
 	}
 
 	delete(name: string): void {
-		assert(false, "Implement me");
+		const idx = this.headerList.findIndex(function (h) {
+			return h.name == name.toLowerCase()
+		})
+		if (idx >= 0)
+			this.headerList.splice(idx, 1)
 	}
 	get(name: string): string | null {
 		for (const header of this.headerList) {
