@@ -35,6 +35,7 @@ function handleCmdResponse(cmdId: number, base: fbs.Base) {
     return
   promiseTable.delete(cmdId);
   const err = errors.maybeError(base);
+  console.log("error is:", err);
   if (err != null) {
     promise!.reject(err);
   } else {
@@ -73,6 +74,7 @@ export function addEventListener(name: string, fn: Function) {
       listenerTable.set(fbs.Any.HttpRequest, function (base: fbs.Base) {
         let msg = new fbs.HttpRequest();
         base.msg(msg);
+        let id = msg.id();
 
         const headersInit: string[][] = [];
         // console.log("headers len:", msg.headersLength());
@@ -88,7 +90,7 @@ export function addEventListener(name: string, fn: Function) {
           body: msg.body() ?
             new ReadableStream({
               start(controller) {
-                streams.set(msg.id(), (chunkMsg: fbs.StreamChunk, raw: Uint8Array) => {
+                streams.set(id, (chunkMsg: fbs.StreamChunk, raw: Uint8Array) => {
                   // console.log("got a chunk:", chunkMsg.bytesArray());
                   controller.enqueue(raw);
                   if (chunkMsg.done()) {
@@ -108,71 +110,92 @@ export function addEventListener(name: string, fn: Function) {
               ret = resfn()
             }
             if (ret instanceof Promise) {
-              ret.then(handleRes)
+              ret.then(handleRes.bind(null, id)).catch(handleError.bind(null, id))
             } else if (ret instanceof Response) {
-              handleRes(ret)
-            }
-
-            async function handleRes(res: FlyResponse) {
-              if (res.bodyUsed)
-                throw new Error("BODY HAS BEEN USED, NO PUEDO!")
-              // console.log("respond with!", res);
-
-              const fbb = new flatbuffers.Builder();
-
-              let headersArr = Array.from(res.headers[Symbol.iterator]());
-              const headersLength = headersArr.length;
-              let fbbHeaders = Array<number>();
-
-              try {
-                // console.log("trying stuff")
-                for (let i = 0; i < headersLength; i++) {
-                  // console.log("doing header:", headerKeys[i]);
-                  const key = fbb.createString(headersArr[i].name);
-                  const value = fbb.createString(headersArr[i].value);
-                  fbs.HttpHeader.startHttpHeader(fbb);
-                  fbs.HttpHeader.addKey(fbb, key);
-                  fbs.HttpHeader.addValue(fbb, value);
-                  fbbHeaders[i] = fbs.HttpHeader.endHttpHeader(fbb);
-                }
-                // console.log(fbbHeaders);
-                let resHeaders = fbs.HttpResponse.createHeadersVector(fbb, fbbHeaders);
-
-                fbs.HttpResponse.startHttpResponse(fbb);
-                fbs.HttpResponse.addId(fbb, msg.id());
-                fbs.HttpResponse.addHeaders(fbb, resHeaders);
-                let resBody = res.body;
-                fbs.HttpResponse.addBody(fbb, resBody != null)
-
-                const resMsg = fbs.HttpResponse.endHttpResponse(fbb);
-                sendSync(fbb, fbs.Any.HttpResponse, resMsg); // sync so we can send body chunks when it's ready!
-
-                if (!resBody)
-                  return
-
-                let reader = resBody.getReader();
-                let cur = await reader.read()
-                let done = false
-                while (!done) {
-                  const fbb = new flatbuffers.Builder()
-                  fbs.StreamChunk.startStreamChunk(fbb)
-                  fbs.StreamChunk.addId(fbb, msg.id());
-                  fbs.StreamChunk.addDone(fbb, cur.done);
-                  sendSync(fbb, fbs.Any.StreamChunk, fbs.StreamChunk.endStreamChunk(fbb), cur.value)
-                  if (cur.done)
-                    done = true
-                  else
-                    cur = await reader.read()
-                }
-
-              } catch (e) {
-                console.log("caught an error:", e.message, e.stack);
-                throw e
-              }
+              handleRes(id, ret)
             }
           }
         })
       })
+  }
+}
+
+function handleError(id: number, err: Error) {
+  console.error(err.stack);
+  const fbb = new flatbuffers.Builder();
+
+  fbs.HttpResponse.startHttpResponse(fbb);
+  fbs.HttpResponse.addId(fbb, id);
+  fbs.HttpResponse.addBody(fbb, true)
+
+  const resMsg = fbs.HttpResponse.endHttpResponse(fbb);
+  sendSync(fbb, fbs.Any.HttpResponse, resMsg);
+  sendStreamChunk(id, true, new TextEncoder().encode(err.stack));
+}
+
+export async function sendStreamChunks(id: number, stream: ReadableStream) {
+  let reader = stream.getReader();
+  let cur = await reader.read()
+  let done = false
+  while (!done) {
+    sendStreamChunk(id, cur.done, cur.value);
+    if (cur.done)
+      done = true
+    else
+      cur = await reader.read()
+  }
+}
+
+export function sendStreamChunk(id: number, done: boolean, value: any) {
+  const fbb = new flatbuffers.Builder()
+  fbs.StreamChunk.startStreamChunk(fbb)
+  fbs.StreamChunk.addId(fbb, id);
+  fbs.StreamChunk.addDone(fbb, done);
+  sendSync(fbb, fbs.Any.StreamChunk, fbs.StreamChunk.endStreamChunk(fbb), value)
+}
+
+async function handleRes(id: number, res: FlyResponse) {
+  if (res.bodyUsed)
+    throw new Error("BODY HAS BEEN USED, NO PUEDO!")
+  // console.log("respond with!", res);
+
+  const fbb = new flatbuffers.Builder();
+
+  let headersArr = Array.from(res.headers[Symbol.iterator]());
+  const headersLength = headersArr.length;
+  let fbbHeaders = Array<number>();
+
+  try {
+    // console.log("trying stuff")
+    for (let i = 0; i < headersLength; i++) {
+      // console.log("doing header:", headerKeys[i]);
+      const key = fbb.createString(headersArr[i].name);
+      const value = fbb.createString(headersArr[i].value);
+      fbs.HttpHeader.startHttpHeader(fbb);
+      fbs.HttpHeader.addKey(fbb, key);
+      fbs.HttpHeader.addValue(fbb, value);
+      fbbHeaders[i] = fbs.HttpHeader.endHttpHeader(fbb);
+    }
+    // console.log(fbbHeaders);
+    let resHeaders = fbs.HttpResponse.createHeadersVector(fbb, fbbHeaders);
+
+    fbs.HttpResponse.startHttpResponse(fbb);
+    fbs.HttpResponse.addId(fbb, id);
+    fbs.HttpResponse.addHeaders(fbb, resHeaders);
+    let resBody = res.body;
+    fbs.HttpResponse.addBody(fbb, resBody != null)
+
+    const resMsg = fbs.HttpResponse.endHttpResponse(fbb);
+    sendSync(fbb, fbs.Any.HttpResponse, resMsg); // sync so we can send body chunks when it's ready!
+
+    if (!resBody)
+      return
+
+    await sendStreamChunks(id, resBody);
+
+  } catch (e) {
+    console.log("caught an error:", e.message, e.stack);
+    throw e
   }
 }
 
@@ -203,7 +226,6 @@ export function sendSync(
     return null;
   } else {
     const u8 = new Uint8Array(resBuf!);
-    // console.log("recv sync message", util.hexdump(u8));
     const bb = new flatbuffers.ByteBuffer(u8);
     const baseRes = fbs.Base.getRootAsBase(bb);
     errors.maybeThrowError(baseRes);

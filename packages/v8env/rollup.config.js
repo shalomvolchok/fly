@@ -17,6 +17,7 @@ export default {
   output: {
     file: 'dist/bundle.js',
     format: 'iife',
-    name: 'flyMain'
+    name: 'flyMain',
+    sourcemap: true,
   }
 };

@@ -97,8 +97,19 @@ import "./globals";
 // log(window);
 // window.TextDecoder = TextDecoder;
 
+function onGlobalError(
+  message: string,
+  source: string,
+  lineno: number,
+  colno: number,
+  error: Error
+) {
+  console.log(error.stack);
+}
+
 export default function flyMain() {
   libfly.recv(handleAsyncMsgFromRust)
+  libfly.setGlobalErrorHandler(onGlobalError);
 }
 
 // function onMessage(ui8: Uint8Array) {

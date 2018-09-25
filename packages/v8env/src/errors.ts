@@ -1,7 +1,7 @@
 import * as fbs from "./msg_generated";
 
 // @internal
-export class DenoError<T extends fbs.ErrorKind> extends Error {
+export class FlyError<T extends fbs.ErrorKind> extends Error {
   constructor(readonly kind: T, msg: string) {
     super(msg);
     this.name = fbs.ErrorKind[kind];
@@ -16,11 +16,11 @@ export function maybeThrowError(base: fbs.Base): void {
   }
 }
 
-export function maybeError(base: fbs.Base): null | DenoError<fbs.ErrorKind> {
+export function maybeError(base: fbs.Base): null | FlyError<fbs.ErrorKind> {
   const kind = base.errorKind();
   if (kind === fbs.ErrorKind.NoError) {
     return null;
   } else {
-    return new DenoError(kind, base.error()!);
+    return new FlyError(kind, base.error()!);
   }
 }

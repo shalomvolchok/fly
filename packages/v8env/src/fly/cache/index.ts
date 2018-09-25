@@ -18,7 +18,7 @@
  */
 
 /** */
-import { sendSync, sendAsync, streams } from '../../bridge'
+import { sendSync, sendAsync, streams, sendStreamChunks, sendStreamChunk } from '../../bridge'
 import * as fbs from "../../msg_generated";
 import { flatbuffers } from "flatbuffers";
 
@@ -53,9 +53,7 @@ export function getStream(key: string): Promise<ReadableStream | null> {
     return msg.stream() ?
       new WhatWGReadableStream({
         start(controller) {
-          console.log("starting stream!");
           streams.set(msg.id(), (chunkMsg: fbs.StreamChunk, raw: Uint8Array) => {
-            // console.log("got chunk, done?", chunkMsg.done());
             controller.enqueue(raw);
             if (chunkMsg.done()) {
               controller.close()
@@ -135,23 +133,9 @@ export function set(key: string, value: string | ArrayBuffer | ArrayBufferView |
     console.log("id:", id)
     if (value instanceof WhatWGReadableStream) {
       console.log("got a stream");
-      let reader = value.getReader();
-      let cur = await reader.read()
-      let done = false
-      while (!done) {
-        const fbb = new flatbuffers.Builder()
-        fbs.StreamChunk.startStreamChunk(fbb)
-        fbs.StreamChunk.addId(fbb, id);
-        fbs.StreamChunk.addDone(fbb, cur.done);
-        sendSync(fbb, fbs.Any.StreamChunk, fbs.StreamChunk.endStreamChunk(fbb), cur.value)
-        if (cur.done)
-          done = true
-        else
-          cur = await reader.read()
-      }
+      await sendStreamChunks(id, value)
     } else {
       console.log("not a readable stream I guess!");
-      const fbb = new flatbuffers.Builder()
       let buf: ArrayBufferView;
       if (typeof value === "string") {
         console.log("string")
@@ -163,10 +147,7 @@ export function set(key: string, value: string | ArrayBuffer | ArrayBufferView |
         console.log("array buf view")
         buf = value
       }
-      fbs.StreamChunk.startStreamChunk(fbb)
-      fbs.StreamChunk.addId(fbb, id);
-      fbs.StreamChunk.addDone(fbb, true);
-      sendSync(fbb, fbs.Any.StreamChunk, fbs.StreamChunk.endStreamChunk(fbb), buf)
+      sendStreamChunk(id, true, buf);
       console.log("sent, done.");
     }
     return true

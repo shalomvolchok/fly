@@ -25,7 +25,40 @@ export enum Any{
  * @enum
  */
 export enum ErrorKind{
-  NoError= 0
+  NoError= 0,
+  NotFound= 1,
+  PermissionDenied= 2,
+  ConnectionRefused= 3,
+  ConnectionReset= 4,
+  ConnectionAborted= 5,
+  NotConnected= 6,
+  AddrInUse= 7,
+  AddrNotAvailable= 8,
+  BrokenPipe= 9,
+  AlreadyExists= 10,
+  WouldBlock= 11,
+  InvalidInput= 12,
+  InvalidData= 13,
+  TimedOut= 14,
+  Interrupted= 15,
+  WriteZero= 16,
+  Other= 17,
+  UnexpectedEof= 18,
+  EmptyHost= 19,
+  IdnaError= 20,
+  InvalidPort= 21,
+  InvalidIpv4Address= 22,
+  InvalidIpv6Address= 23,
+  InvalidDomainCharacter= 24,
+  RelativeUrlWithoutBase= 25,
+  RelativeUrlWithCannotBeABaseBase= 26,
+  SetHostOnCannotBeABaseUrl= 27,
+  Overflow= 28,
+  HttpUser= 29,
+  HttpClosed= 30,
+  HttpCanceled= 31,
+  HttpParse= 32,
+  HttpOther= 33
 };
 
 /**

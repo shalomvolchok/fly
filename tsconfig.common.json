@@ -6,8 +6,9 @@
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
-    "inlineSourceMap": true,
-    "inlineSources": true,
+    "sourceMap": true,
+    // "inlineSourceMap": true,
+    // "inlineSources": true,
     "baseUrl": "packages/",
     "paths": {
       "@fly/*": [
