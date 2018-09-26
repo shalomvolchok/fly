@@ -19,8 +19,10 @@ export enum Any{
   CacheSetReady= 12,
   CryptoDigest= 13,
   CryptoDigestReady= 14,
-  SourceMap= 15,
-  SourceMapReady= 16
+  CryptoRandomValues= 15,
+  CryptoRandomValuesReady= 16,
+  SourceMap= 17,
+  SourceMapReady= 18
 };
 
 /**
@@ -1844,6 +1846,179 @@ static startBufferVector(builder:flatbuffers.Builder, numElems:number) {
  * @returns flatbuffers.Offset
  */
 static endCryptoDigestReady(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class CryptoRandomValues {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns CryptoRandomValues
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):CryptoRandomValues {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param CryptoRandomValues= obj
+ * @returns CryptoRandomValues
+ */
+static getRootAsCryptoRandomValues(bb:flatbuffers.ByteBuffer, obj?:CryptoRandomValues):CryptoRandomValues {
+  return (obj || new CryptoRandomValues).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @returns number
+ */
+len():number {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_len(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint32(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startCryptoRandomValues(builder:flatbuffers.Builder) {
+  builder.startObject(1);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number len
+ */
+static addLen(builder:flatbuffers.Builder, len:number) {
+  builder.addFieldInt32(0, len, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endCryptoRandomValues(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class CryptoRandomValuesReady {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns CryptoRandomValuesReady
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):CryptoRandomValuesReady {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param CryptoRandomValuesReady= obj
+ * @returns CryptoRandomValuesReady
+ */
+static getRootAsCryptoRandomValuesReady(bb:flatbuffers.ByteBuffer, obj?:CryptoRandomValuesReady):CryptoRandomValuesReady {
+  return (obj || new CryptoRandomValuesReady).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param number index
+ * @returns number
+ */
+buffer(index: number):number|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.readUint8(this.bb!.__vector(this.bb_pos + offset) + index) : 0;
+};
+
+/**
+ * @returns number
+ */
+bufferLength():number {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns Uint8Array
+ */
+bufferArray():Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? new Uint8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startCryptoRandomValuesReady(builder:flatbuffers.Builder) {
+  builder.startObject(1);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset bufferOffset
+ */
+static addBuffer(builder:flatbuffers.Builder, bufferOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, bufferOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param Array.<number> data
+ * @returns flatbuffers.Offset
+ */
+static createBufferVector(builder:flatbuffers.Builder, data:number[] | Uint8Array):flatbuffers.Offset {
+  builder.startVector(1, data.length, 1);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addInt8(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number numElems
+ */
+static startBufferVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(1, numElems, 1);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endCryptoRandomValuesReady(builder:flatbuffers.Builder):flatbuffers.Offset {
   var offset = builder.endObject();
   return offset;
 };

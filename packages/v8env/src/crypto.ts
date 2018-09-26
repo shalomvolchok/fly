@@ -11,6 +11,7 @@ import { sendSync, sendAsync } from "./bridge";
  */
 
 /** @hidden */
+
 export const crypto = {
   subtle: {
     digest(algo: string, data: ArrayBufferView | ArrayBuffer): Promise<ArrayBufferLike> {
@@ -28,12 +29,18 @@ export const crypto = {
       })
     },
   },
-  // getRandomValues(typedArray: Uint8Array): void {
-  //   if (!(typedArray instanceof Uint8Array)) {
-  //     throw new Error("Only Uint8Array are supported at present")
-  //   }
-  //   const newArr = new Uint8Array(bridge.dispatchSync("getRandomValues", typedArray.length))
-  //   typedArray.set(newArr)
-  //   return
-  // }
+  getRandomValues(typedArray: Uint8Array): void {
+    if (!(typedArray instanceof Uint8Array)) {
+      throw new Error("Only Uint8Array are supported at present")
+    }
+    const fbb = new flatbuffers.Builder();
+    fbs.CryptoRandomValues.startCryptoRandomValues(fbb);
+    fbs.CryptoRandomValues.addLen(fbb, typedArray.length);
+    const baseRes = sendSync(fbb, fbs.Any.CryptoRandomValues, fbs.CryptoRandomValues.endCryptoRandomValues(fbb));
+    // const newArr = new Uint8Array(bridge.dispatchSync("getRandomValues", typedArray.length))
+    const msg = new fbs.CryptoRandomValuesReady();
+    baseRes.msg(msg);
+    typedArray.set(msg.bufferArray());
+    return
+  }
 }
