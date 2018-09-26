@@ -16,7 +16,8 @@ interface Libfly {
     ) => void
   ) => void;
 
-  sourceMaps: { [key: string]: string }
+  // sources: { [key: string]: string }
+  // sourceMaps: { [key: string]: any }
 }
 
 const window = globalEval("this");

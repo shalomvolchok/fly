@@ -18,9 +18,9 @@ class CookieJar {
 	constructor(parent) {
 		this.parent = parent
 		if (parent instanceof Request)
-			this.cookies = parseCookies(parent.headers.getAll("Cookie"))
+			this.cookies = parseCookies(parent.headers.get("Cookie"))
 		else if (parent instanceof Response)
-			this.cookies = parseCookies(parent.headers.getAll("Set-Cookie"))
+			this.cookies = parseCookies(parent.headers.get("Set-Cookie"))
 	}
 
 	/**

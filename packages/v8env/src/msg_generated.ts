@@ -18,7 +18,9 @@ export enum Any{
   CacheSet= 11,
   CacheSetReady= 12,
   CryptoDigest= 13,
-  CryptoDigestReady= 14
+  CryptoDigestReady= 14,
+  SourceMap= 15,
+  SourceMapReady= 16
 };
 
 /**
@@ -26,39 +28,40 @@ export enum Any{
  */
 export enum ErrorKind{
   NoError= 0,
-  NotFound= 1,
-  PermissionDenied= 2,
-  ConnectionRefused= 3,
-  ConnectionReset= 4,
-  ConnectionAborted= 5,
-  NotConnected= 6,
-  AddrInUse= 7,
-  AddrNotAvailable= 8,
-  BrokenPipe= 9,
-  AlreadyExists= 10,
-  WouldBlock= 11,
-  InvalidInput= 12,
-  InvalidData= 13,
-  TimedOut= 14,
-  Interrupted= 15,
-  WriteZero= 16,
-  Other= 17,
-  UnexpectedEof= 18,
-  EmptyHost= 19,
-  IdnaError= 20,
-  InvalidPort= 21,
-  InvalidIpv4Address= 22,
-  InvalidIpv6Address= 23,
-  InvalidDomainCharacter= 24,
-  RelativeUrlWithoutBase= 25,
-  RelativeUrlWithCannotBeABaseBase= 26,
-  SetHostOnCannotBeABaseUrl= 27,
-  Overflow= 28,
-  HttpUser= 29,
-  HttpClosed= 30,
-  HttpCanceled= 31,
-  HttpParse= 32,
-  HttpOther= 33
+  String= 1,
+  NotFound= 2,
+  PermissionDenied= 3,
+  ConnectionRefused= 4,
+  ConnectionReset= 5,
+  ConnectionAborted= 6,
+  NotConnected= 7,
+  AddrInUse= 8,
+  AddrNotAvailable= 9,
+  BrokenPipe= 10,
+  AlreadyExists= 11,
+  WouldBlock= 12,
+  InvalidInput= 13,
+  InvalidData= 14,
+  TimedOut= 15,
+  Interrupted= 16,
+  WriteZero= 17,
+  Other= 18,
+  UnexpectedEof= 19,
+  EmptyHost= 20,
+  IdnaError= 21,
+  InvalidPort= 22,
+  InvalidIpv4Address= 23,
+  InvalidIpv6Address= 24,
+  InvalidDomainCharacter= 25,
+  RelativeUrlWithoutBase= 26,
+  RelativeUrlWithCannotBeABaseBase= 27,
+  SetHostOnCannotBeABaseUrl= 28,
+  Overflow= 29,
+  HttpUser= 30,
+  HttpClosed= 31,
+  HttpCanceled= 32,
+  HttpParse= 33,
+  HttpOther= 34
 };
 
 /**
@@ -1035,10 +1038,33 @@ headersLength():number {
 };
 
 /**
+ * @returns number
+ */
+status():number {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_status(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt32(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @returns boolean
  */
 body():boolean {
-  var offset = this.bb!.__offset(this.bb_pos, 8);
+  var offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
 };
 
@@ -1047,7 +1073,7 @@ body():boolean {
  * @returns boolean
  */
 mutate_body(value:boolean):boolean {
-  var offset = this.bb!.__offset(this.bb_pos, 8);
+  var offset = this.bb!.__offset(this.bb_pos, 10);
 
   if (offset === 0) {
     return false;
@@ -1061,7 +1087,7 @@ mutate_body(value:boolean):boolean {
  * @param flatbuffers.Builder builder
  */
 static startHttpResponse(builder:flatbuffers.Builder) {
-  builder.startObject(3);
+  builder.startObject(4);
 };
 
 /**
@@ -1103,10 +1129,18 @@ static startHeadersVector(builder:flatbuffers.Builder, numElems:number) {
 
 /**
  * @param flatbuffers.Builder builder
+ * @param number status
+ */
+static addStatus(builder:flatbuffers.Builder, status:number) {
+  builder.addFieldInt32(2, status, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
  * @param boolean body
  */
 static addBody(builder:flatbuffers.Builder, body:boolean) {
-  builder.addFieldInt8(2, +body, +false);
+  builder.addFieldInt8(3, +body, +false);
 };
 
 /**
@@ -1810,6 +1844,332 @@ static startBufferVector(builder:flatbuffers.Builder, numElems:number) {
  * @returns flatbuffers.Offset
  */
 static endCryptoDigestReady(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class Frame {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns Frame
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):Frame {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param Frame= obj
+ * @returns Frame
+ */
+static getRootAsFrame(bb:flatbuffers.ByteBuffer, obj?:Frame):Frame {
+  return (obj || new Frame).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @returns number
+ */
+line():number {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_line(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint32(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns number
+ */
+col():number {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_col(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint32(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param flatbuffers.Encoding= optionalEncoding
+ * @returns string|Uint8Array|null
+ */
+filename():string|null
+filename(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+filename(optionalEncoding?:any):string|Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+};
+
+/**
+ * @param flatbuffers.Encoding= optionalEncoding
+ * @returns string|Uint8Array|null
+ */
+name():string|null
+name(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+name(optionalEncoding?:any):string|Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startFrame(builder:flatbuffers.Builder) {
+  builder.startObject(4);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number line
+ */
+static addLine(builder:flatbuffers.Builder, line:number) {
+  builder.addFieldInt32(0, line, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number col
+ */
+static addCol(builder:flatbuffers.Builder, col:number) {
+  builder.addFieldInt32(1, col, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset filenameOffset
+ */
+static addFilename(builder:flatbuffers.Builder, filenameOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(2, filenameOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset nameOffset
+ */
+static addName(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(3, nameOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endFrame(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class SourceMap {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns SourceMap
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):SourceMap {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param SourceMap= obj
+ * @returns SourceMap
+ */
+static getRootAsSourceMap(bb:flatbuffers.ByteBuffer, obj?:SourceMap):SourceMap {
+  return (obj || new SourceMap).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param number index
+ * @param Frame= obj
+ * @returns Frame
+ */
+frames(index: number, obj?:Frame):Frame|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? (obj || new Frame).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+};
+
+/**
+ * @returns number
+ */
+framesLength():number {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startSourceMap(builder:flatbuffers.Builder) {
+  builder.startObject(1);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset framesOffset
+ */
+static addFrames(builder:flatbuffers.Builder, framesOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, framesOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param Array.<flatbuffers.Offset> data
+ * @returns flatbuffers.Offset
+ */
+static createFramesVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addOffset(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number numElems
+ */
+static startFramesVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(4, numElems, 4);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endSourceMap(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class SourceMapReady {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns SourceMapReady
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):SourceMapReady {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param SourceMapReady= obj
+ * @returns SourceMapReady
+ */
+static getRootAsSourceMapReady(bb:flatbuffers.ByteBuffer, obj?:SourceMapReady):SourceMapReady {
+  return (obj || new SourceMapReady).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param number index
+ * @param Frame= obj
+ * @returns Frame
+ */
+frames(index: number, obj?:Frame):Frame|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? (obj || new Frame).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+};
+
+/**
+ * @returns number
+ */
+framesLength():number {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startSourceMapReady(builder:flatbuffers.Builder) {
+  builder.startObject(1);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset framesOffset
+ */
+static addFrames(builder:flatbuffers.Builder, framesOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, framesOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param Array.<flatbuffers.Offset> data
+ * @returns flatbuffers.Offset
+ */
+static createFramesVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addOffset(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number numElems
+ */
+static startFramesVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(4, numElems, 4);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endSourceMapReady(builder:flatbuffers.Builder):flatbuffers.Offset {
   var offset = builder.endObject();
   return offset;
 };

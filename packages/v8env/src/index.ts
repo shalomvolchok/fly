@@ -84,7 +84,10 @@
 
 import { libfly } from './libfly'
 import { handleAsyncMsgFromRust } from "./bridge"
+import * as sourceMaps from "./source_maps";
+
 import "./globals";
+import { RawSourceMap } from './types';
 // import { fly as fbs } from './msg_generated'
 // import { flatbuffers } from 'flatbuffers'
 // import * as timers from './timers'
@@ -110,6 +113,8 @@ function onGlobalError(
 export default function flyMain() {
   libfly.recv(handleAsyncMsgFromRust)
   libfly.setGlobalErrorHandler(onGlobalError);
+
+  sourceMaps.install();
 }
 
 // function onMessage(ui8: Uint8Array) {

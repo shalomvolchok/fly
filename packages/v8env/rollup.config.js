@@ -1,9 +1,13 @@
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
+import typescript from 'rollup-plugin-typescript2';
+import sourceMaps from 'rollup-plugin-sourcemaps';
+import * as path from 'path';
 
 export default {
-  input: 'lib/index.js',
+  input: 'src/index.ts',
   plugins: [
+    typescript({ useTsconfigDeclarationDir: true }),
     resolve({
       jsnext: true,
       customResolveOptions: {
@@ -13,9 +17,13 @@ export default {
     commonjs({
       include: '../../node_modules/**',
     }),
+    sourceMaps(),
   ],
+  watch: {
+    include: 'src/**',
+  },
   output: {
-    file: 'dist/bundle.js',
+    file: 'dist/v8env.js',
     format: 'iife',
     name: 'flyMain',
     sourcemap: true,
