@@ -1044,7 +1044,7 @@ headersLength():number {
  */
 status():number {
   var offset = this.bb!.__offset(this.bb_pos, 8);
-  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
 };
 
 /**
@@ -1058,7 +1058,7 @@ mutate_status(value:number):boolean {
     return false;
   }
 
-  this.bb!.writeInt32(this.bb_pos + offset, value);
+  this.bb!.writeUint16(this.bb_pos + offset, value);
   return true;
 };
 
@@ -1134,7 +1134,7 @@ static startHeadersVector(builder:flatbuffers.Builder, numElems:number) {
  * @param number status
  */
 static addStatus(builder:flatbuffers.Builder, status:number) {
-  builder.addFieldInt32(2, status, 0);
+  builder.addFieldInt16(2, status, 0);
 };
 
 /**
@@ -1299,10 +1299,33 @@ headersLength():number {
 };
 
 /**
+ * @returns number
+ */
+status():number {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_status(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint16(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
  * @returns boolean
  */
 body():boolean {
-  var offset = this.bb!.__offset(this.bb_pos, 8);
+  var offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
 };
 
@@ -1311,7 +1334,7 @@ body():boolean {
  * @returns boolean
  */
 mutate_body(value:boolean):boolean {
-  var offset = this.bb!.__offset(this.bb_pos, 8);
+  var offset = this.bb!.__offset(this.bb_pos, 10);
 
   if (offset === 0) {
     return false;
@@ -1325,7 +1348,7 @@ mutate_body(value:boolean):boolean {
  * @param flatbuffers.Builder builder
  */
 static startFetchHttpResponse(builder:flatbuffers.Builder) {
-  builder.startObject(3);
+  builder.startObject(4);
 };
 
 /**
@@ -1367,10 +1390,18 @@ static startHeadersVector(builder:flatbuffers.Builder, numElems:number) {
 
 /**
  * @param flatbuffers.Builder builder
+ * @param number status
+ */
+static addStatus(builder:flatbuffers.Builder, status:number) {
+  builder.addFieldInt16(2, status, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
  * @param boolean body
  */
 static addBody(builder:flatbuffers.Builder, body:boolean) {
-  builder.addFieldInt8(2, +body, +false);
+  builder.addFieldInt8(3, +body, +false);
 };
 
 /**

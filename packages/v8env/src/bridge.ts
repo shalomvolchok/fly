@@ -127,6 +127,7 @@ function handleError(id: number, err: Error) {
   fbs.HttpResponse.startHttpResponse(fbb);
   fbs.HttpResponse.addId(fbb, id);
   fbs.HttpResponse.addBody(fbb, true)
+  fbs.HttpResponse.addStatus(fbb, 500)
 
   const resMsg = fbs.HttpResponse.endHttpResponse(fbb);
   sendSync(fbb, fbs.Any.HttpResponse, resMsg);
@@ -182,6 +183,7 @@ async function handleRes(id: number, res: FlyResponse) {
     fbs.HttpResponse.startHttpResponse(fbb);
     fbs.HttpResponse.addId(fbb, id);
     fbs.HttpResponse.addHeaders(fbb, resHeaders);
+    fbs.HttpResponse.addStatus(fbb, res.status);
     let resBody = res.body;
     fbs.HttpResponse.addBody(fbb, resBody != null)
 

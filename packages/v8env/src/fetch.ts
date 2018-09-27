@@ -77,7 +77,7 @@ export function fetch(info: RequestInfo, init?: FlyRequestInit): Promise<FlyResp
 					headersInit.push([h.key(), h.value()]);
 				}
 
-				resolve(new FlyResponse(body, { headers: headersInit }))
+				resolve(new FlyResponse(body, { headers: headersInit, status: msg.status() }))
 			}).catch(reject);
 
 		} catch (err) {
