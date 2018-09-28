@@ -87,18 +87,6 @@ import { handleAsyncMsgFromRust } from "./bridge"
 import * as sourceMaps from "./source_maps";
 
 import "./globals";
-import { RawSourceMap } from './types';
-// import { fly as fbs } from './msg_generated'
-// import { flatbuffers } from 'flatbuffers'
-// import * as timers from './timers'
-
-// import './globals'
-// import { globalEval } from './global-eval';
-
-// const window = globalEval("this");
-// declare function log(...args: any[]);
-// log(window);
-// window.TextDecoder = TextDecoder;
 
 function onGlobalError(
   message: string,

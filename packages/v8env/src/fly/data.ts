@@ -4,7 +4,12 @@
  * Keys and values are stored in range chunks. Chunks migrate to the region they're most frequently accessed from.
  * @module fly/data
  */
-declare var bridge: any
+
+import { assert } from "../util";
+import * as util from "../util";
+import * as fbs from "../msg_generated";
+import { flatbuffers } from "flatbuffers";
+import { sendSync, sendAsync } from "../bridge";
 
 /**
  * A collection of keys and values.
@@ -25,19 +30,17 @@ export class Collection {
    * @param key key for data
    * @param obj value to store
    */
-  put(key: string, obj: string) {
-    return new Promise((resolve, reject) => {
-      try {
-        bridge.dispatch("fly.Data.put", this.name, key, JSON.stringify(obj), (err: string | null, ok: boolean) => {
-          if (err) {
-            reject(new Error(err))
-            return
-          }
-          resolve(ok)
-        })
-      } catch (err) {
-        reject(err)
-      }
+  put(key: string, obj: string): Promise<boolean> {
+    const fbb = new flatbuffers.Builder();
+    const fbbColl = fbb.createString(this.name);
+    const fbbKey = fbb.createString(key);
+    const fbbObj = fbb.createString(JSON.stringify(obj));
+    fbs.DataPut.startDataPut(fbb);
+    fbs.DataPut.addCollection(fbb, fbbColl);
+    fbs.DataPut.addKey(fbb, fbbKey);
+    fbs.DataPut.addJson(fbb, fbbObj);
+    return sendAsync(fbb, fbs.Any.DataPut, fbs.DataPut.endDataPut(fbb)).then(_baseRes => {
+      return true
     })
   }
 
@@ -45,19 +48,19 @@ export class Collection {
    * Retrieves data from the collection store
    * @param key key to retrieve
    */
-  get(key: string) {
-    return new Promise((resolve, reject) => {
-      bridge.dispatch("fly.Data.get", this.name, key, (err: string | null, res: any) => {
-        if (err) {
-          reject(new Error(err))
-          return
-        }
-        try {
-          resolve(JSON.parse(res))
-        } catch (err) {
-          reject(err)
-        }
-      })
+  get(key: string): Promise<any> {
+    const fbb = new flatbuffers.Builder();
+    const fbbColl = fbb.createString(this.name);
+    const fbbKey = fbb.createString(key);
+    fbs.DataGet.startDataGet(fbb);
+    fbs.DataGet.addCollection(fbb, fbbColl);
+    fbs.DataGet.addKey(fbb, fbbKey);
+    return sendAsync(fbb, fbs.Any.DataGet, fbs.DataGet.endDataGet(fbb)).then(baseRes => {
+      if (baseRes.msgType() == fbs.Any.NONE)
+        return null
+      const msg = new fbs.DataGetReady();
+      baseRes.msg(msg);
+      return JSON.parse(msg.json())
     })
   }
 
@@ -65,15 +68,15 @@ export class Collection {
    * Deletes data from the collection store.
    * @param key key to delete
    */
-  del(key: string) {
-    return new Promise((resolve, reject) => {
-      bridge.dispatch("fly.Data.del", this.name, key, (err: string | null, ok: boolean) => {
-        if (err) {
-          reject(new Error(err))
-          return
-        }
-        resolve(ok)
-      })
+  del(key: string): Promise<boolean> {
+    const fbb = new flatbuffers.Builder();
+    const fbbColl = fbb.createString(this.name);
+    const fbbKey = fbb.createString(key);
+    fbs.DataDel.startDataDel(fbb);
+    fbs.DataDel.addCollection(fbb, fbbColl);
+    fbs.DataDel.addKey(fbb, fbbKey);
+    return sendAsync(fbb, fbs.Any.DataDel, fbs.DataDel.endDataDel(fbb)).then(_baseRes => {
+      return true
     })
   }
 }
@@ -82,15 +85,13 @@ const data = {
   collection(name: string) {
     return new Collection(name)
   },
-  dropCollection(name: string) {
-    return new Promise((resolve, reject) => {
-      bridge.dispatch("fly.Data.dropCollection", name, (err: string | null, ok: boolean) => {
-        if (err) {
-          reject(new Error(err))
-          return
-        }
-        resolve(ok)
-      })
+  dropCollection(name: string): Promise<boolean> {
+    const fbb = new flatbuffers.Builder();
+    const fbbColl = fbb.createString(this.name);
+    fbs.DataDropCollection.startDataDropCollection(fbb);
+    fbs.DataDropCollection.addCollection(fbb, fbbColl);
+    return sendAsync(fbb, fbs.Any.DataDropCollection, fbs.DataDropCollection.endDataDropCollection(fbb)).then(_baseRes => {
+      return true
     })
   }
 }

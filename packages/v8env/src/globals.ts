@@ -15,6 +15,7 @@ import cache_ from "./cache";
 
 import * as url from './url';
 import { FlyRequest } from "./request";
+import data from './fly/data';
 
 declare global {
   interface Window {
@@ -47,6 +48,9 @@ declare global {
 
   let crypto: typeof crypto_.crypto;
   let cache: typeof cache_;
+
+  // TODO: remove
+  let flyData: typeof data;
 }
 
 // A reference to the global object.
@@ -73,3 +77,5 @@ window.URLSearchParams = url.URLSearchParams;
 window.fetch = fetch_.fetch;
 window.crypto = crypto_.crypto;
 window.cache = cache_;
+
+window.flyData = data;
