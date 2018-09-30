@@ -35,7 +35,6 @@ function handleCmdResponse(cmdId: number, base: fbs.Base) {
     return
   promiseTable.delete(cmdId);
   const err = errors.maybeError(base);
-  console.log("error is:", err);
   if (err != null) {
     promise!.reject(err);
   } else {
