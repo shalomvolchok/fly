@@ -28,7 +28,8 @@ export function prepareStackTrace(error: Error, stack: CallSite[]): string {
   const fbb = new flatbuffers.Builder();
   const offsets: number[] = stack.map((frame: CallSite) => {
     const filename = fbb.createString(frame.getFileName());
-    const name = fbb.createString(frame.getFunctionName());
+    const fnName = frame.getFunctionName();
+    const name = fbb.createString(fnName ? fnName : "");
     fbs.Frame.startFrame(fbb);
     fbs.Frame.addCol(fbb, frame.getColumnNumber());
     fbs.Frame.addLine(fbb, frame.getLineNumber());
