@@ -10,6 +10,7 @@ import * as bridge from "./bridge";
 import * as textEncoding from "./text-encoding";
 import { FlyResponse } from "./response";
 import * as fetch_ from './fetch';
+import * as resolv_ from './resolv';
 import * as crypto_ from "./crypto";
 import cache_ from "./cache";
 
@@ -37,6 +38,7 @@ declare global {
   const Request: typeof FlyRequest;
 
   const fetch: typeof fetch_.fetch;
+  const resolv: typeof resolv_.resolv;
 
   // tslint:disable:variable-name
   let TextEncoder: typeof textEncoding.TextEncoder;
@@ -75,6 +77,7 @@ window.URL = url.URL;
 window.URLSearchParams = url.URLSearchParams;
 
 window.fetch = fetch_.fetch;
+window.resolv = resolv_.resolv;
 window.crypto = crypto_.crypto;
 window.cache = cache_;
 

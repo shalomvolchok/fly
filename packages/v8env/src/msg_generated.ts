@@ -27,7 +27,10 @@ export enum Any{
   DataGet= 20,
   DataGetReady= 21,
   DataDel= 22,
-  DataDropCollection= 23
+  DataDropCollection= 23,
+  DnsQuery= 24,
+  DnsRequest= 25,
+  DnsResponse= 26
 };
 
 /**
@@ -84,6 +87,99 @@ export enum HttpMethod{
   Connect= 6,
   Options= 7,
   Trace= 8
+};
+
+/**
+ * @enum
+ */
+export enum DnsRecordType{
+  A= 0,
+  AAAA= 1,
+  ANY= 2,
+  AXFR= 3,
+  CAA= 4,
+  CNAME= 5,
+  IXFR= 6,
+  MX= 7,
+  NS= 8,
+  NULL= 9,
+  OPT= 10,
+  PTR= 11,
+  SOA= 12,
+  SRV= 13,
+  TLSA= 14,
+  TXT= 15
+};
+
+/**
+ * @enum
+ */
+export enum DnsResponseCode{
+  NoError= 0,
+  FormErr= 1,
+  ServFail= 2,
+  NXDomain= 3,
+  NotImp= 4,
+  Refused= 5,
+  YXDomain= 6,
+  YXRRSet= 7,
+  NXRRSet= 8,
+  NotAuth= 9,
+  NotZone= 10,
+  BADVERS= 11,
+  BADSIG= 12,
+  BADKEY= 13,
+  BADTIME= 14,
+  BADMODE= 15,
+  BADNAME= 16,
+  BADALG= 17,
+  BADTRUNC= 18,
+  BADCOOKIE= 19
+};
+
+/**
+ * @enum
+ */
+export enum DnsOpCode{
+  Query= 0,
+  Status= 1,
+  Notify= 2,
+  Update= 3
+};
+
+/**
+ * @enum
+ */
+export enum DnsMessageType{
+  Query= 0,
+  Response= 1
+};
+
+/**
+ * @enum
+ */
+export enum DnsClass{
+  IN= 0,
+  CH= 1,
+  HS= 2,
+  NONE= 3,
+  ANY= 4
+};
+
+/**
+ * @enum
+ */
+export enum DnsRecordData{
+  NONE= 0,
+  DnsA= 1,
+  DnsAAAA= 2,
+  DnsCNAME= 3,
+  DnsMX= 4,
+  DnsNS= 5,
+  DnsPTR= 6,
+  DnsSOA= 7,
+  DnsSRV= 8,
+  DnsTXT= 9
 };
 
 /**
@@ -2772,6 +2868,1803 @@ static addCollection(builder:flatbuffers.Builder, collectionOffset:flatbuffers.O
  * @returns flatbuffers.Offset
  */
 static endDataDropCollection(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class DnsA {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns DnsA
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):DnsA {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param DnsA= obj
+ * @returns DnsA
+ */
+static getRootAsDnsA(bb:flatbuffers.ByteBuffer, obj?:DnsA):DnsA {
+  return (obj || new DnsA).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param flatbuffers.Encoding= optionalEncoding
+ * @returns string|Uint8Array|null
+ */
+ip():string|null
+ip(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+ip(optionalEncoding?:any):string|Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startDnsA(builder:flatbuffers.Builder) {
+  builder.startObject(1);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset ipOffset
+ */
+static addIp(builder:flatbuffers.Builder, ipOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, ipOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endDnsA(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class DnsAAAA {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns DnsAAAA
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):DnsAAAA {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param DnsAAAA= obj
+ * @returns DnsAAAA
+ */
+static getRootAsDnsAAAA(bb:flatbuffers.ByteBuffer, obj?:DnsAAAA):DnsAAAA {
+  return (obj || new DnsAAAA).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param flatbuffers.Encoding= optionalEncoding
+ * @returns string|Uint8Array|null
+ */
+ip():string|null
+ip(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+ip(optionalEncoding?:any):string|Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startDnsAAAA(builder:flatbuffers.Builder) {
+  builder.startObject(1);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset ipOffset
+ */
+static addIp(builder:flatbuffers.Builder, ipOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, ipOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endDnsAAAA(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class DnsCNAME {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns DnsCNAME
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):DnsCNAME {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param DnsCNAME= obj
+ * @returns DnsCNAME
+ */
+static getRootAsDnsCNAME(bb:flatbuffers.ByteBuffer, obj?:DnsCNAME):DnsCNAME {
+  return (obj || new DnsCNAME).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param flatbuffers.Encoding= optionalEncoding
+ * @returns string|Uint8Array|null
+ */
+name():string|null
+name(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+name(optionalEncoding?:any):string|Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startDnsCNAME(builder:flatbuffers.Builder) {
+  builder.startObject(1);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset nameOffset
+ */
+static addName(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, nameOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endDnsCNAME(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class DnsMX {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns DnsMX
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):DnsMX {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param DnsMX= obj
+ * @returns DnsMX
+ */
+static getRootAsDnsMX(bb:flatbuffers.ByteBuffer, obj?:DnsMX):DnsMX {
+  return (obj || new DnsMX).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @returns number
+ */
+preference():number {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_preference(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint16(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param flatbuffers.Encoding= optionalEncoding
+ * @returns string|Uint8Array|null
+ */
+exchange():string|null
+exchange(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+exchange(optionalEncoding?:any):string|Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startDnsMX(builder:flatbuffers.Builder) {
+  builder.startObject(2);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number preference
+ */
+static addPreference(builder:flatbuffers.Builder, preference:number) {
+  builder.addFieldInt16(0, preference, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset exchangeOffset
+ */
+static addExchange(builder:flatbuffers.Builder, exchangeOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(1, exchangeOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endDnsMX(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class DnsNS {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns DnsNS
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):DnsNS {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param DnsNS= obj
+ * @returns DnsNS
+ */
+static getRootAsDnsNS(bb:flatbuffers.ByteBuffer, obj?:DnsNS):DnsNS {
+  return (obj || new DnsNS).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param flatbuffers.Encoding= optionalEncoding
+ * @returns string|Uint8Array|null
+ */
+name():string|null
+name(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+name(optionalEncoding?:any):string|Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startDnsNS(builder:flatbuffers.Builder) {
+  builder.startObject(1);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset nameOffset
+ */
+static addName(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, nameOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endDnsNS(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class DnsPTR {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns DnsPTR
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):DnsPTR {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param DnsPTR= obj
+ * @returns DnsPTR
+ */
+static getRootAsDnsPTR(bb:flatbuffers.ByteBuffer, obj?:DnsPTR):DnsPTR {
+  return (obj || new DnsPTR).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param flatbuffers.Encoding= optionalEncoding
+ * @returns string|Uint8Array|null
+ */
+name():string|null
+name(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+name(optionalEncoding?:any):string|Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startDnsPTR(builder:flatbuffers.Builder) {
+  builder.startObject(1);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset nameOffset
+ */
+static addName(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, nameOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endDnsPTR(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class DnsSOA {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns DnsSOA
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):DnsSOA {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param DnsSOA= obj
+ * @returns DnsSOA
+ */
+static getRootAsDnsSOA(bb:flatbuffers.ByteBuffer, obj?:DnsSOA):DnsSOA {
+  return (obj || new DnsSOA).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param flatbuffers.Encoding= optionalEncoding
+ * @returns string|Uint8Array|null
+ */
+mname():string|null
+mname(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+mname(optionalEncoding?:any):string|Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+};
+
+/**
+ * @param flatbuffers.Encoding= optionalEncoding
+ * @returns string|Uint8Array|null
+ */
+rname():string|null
+rname(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+rname(optionalEncoding?:any):string|Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+};
+
+/**
+ * @returns number
+ */
+serial():number {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_serial(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint32(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns number
+ */
+refresh():number {
+  var offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_refresh(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 10);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt32(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns number
+ */
+retry():number {
+  var offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_retry(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 12);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt32(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns number
+ */
+expire():number {
+  var offset = this.bb!.__offset(this.bb_pos, 14);
+  return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_expire(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 14);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt32(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns number
+ */
+minimum():number {
+  var offset = this.bb!.__offset(this.bb_pos, 16);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_minimum(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 16);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint32(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startDnsSOA(builder:flatbuffers.Builder) {
+  builder.startObject(7);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset mnameOffset
+ */
+static addMname(builder:flatbuffers.Builder, mnameOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, mnameOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset rnameOffset
+ */
+static addRname(builder:flatbuffers.Builder, rnameOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(1, rnameOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number serial
+ */
+static addSerial(builder:flatbuffers.Builder, serial:number) {
+  builder.addFieldInt32(2, serial, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number refresh
+ */
+static addRefresh(builder:flatbuffers.Builder, refresh:number) {
+  builder.addFieldInt32(3, refresh, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number retry
+ */
+static addRetry(builder:flatbuffers.Builder, retry:number) {
+  builder.addFieldInt32(4, retry, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number expire
+ */
+static addExpire(builder:flatbuffers.Builder, expire:number) {
+  builder.addFieldInt32(5, expire, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number minimum
+ */
+static addMinimum(builder:flatbuffers.Builder, minimum:number) {
+  builder.addFieldInt32(6, minimum, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endDnsSOA(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class DnsSRV {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns DnsSRV
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):DnsSRV {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param DnsSRV= obj
+ * @returns DnsSRV
+ */
+static getRootAsDnsSRV(bb:flatbuffers.ByteBuffer, obj?:DnsSRV):DnsSRV {
+  return (obj || new DnsSRV).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @returns number
+ */
+priority():number {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_priority(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint16(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns number
+ */
+weight():number {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_weight(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint16(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns number
+ */
+port():number {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_port(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint16(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param flatbuffers.Encoding= optionalEncoding
+ * @returns string|Uint8Array|null
+ */
+target():string|null
+target(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+target(optionalEncoding?:any):string|Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startDnsSRV(builder:flatbuffers.Builder) {
+  builder.startObject(4);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number priority
+ */
+static addPriority(builder:flatbuffers.Builder, priority:number) {
+  builder.addFieldInt16(0, priority, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number weight
+ */
+static addWeight(builder:flatbuffers.Builder, weight:number) {
+  builder.addFieldInt16(1, weight, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number port
+ */
+static addPort(builder:flatbuffers.Builder, port:number) {
+  builder.addFieldInt16(2, port, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset targetOffset
+ */
+static addTarget(builder:flatbuffers.Builder, targetOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(3, targetOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endDnsSRV(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class DnsTXTData {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns DnsTXTData
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):DnsTXTData {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param DnsTXTData= obj
+ * @returns DnsTXTData
+ */
+static getRootAsDnsTXTData(bb:flatbuffers.ByteBuffer, obj?:DnsTXTData):DnsTXTData {
+  return (obj || new DnsTXTData).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param number index
+ * @returns number
+ */
+data(index: number):number|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.readUint8(this.bb!.__vector(this.bb_pos + offset) + index) : 0;
+};
+
+/**
+ * @returns number
+ */
+dataLength():number {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @returns Uint8Array
+ */
+dataArray():Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? new Uint8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startDnsTXTData(builder:flatbuffers.Builder) {
+  builder.startObject(1);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset dataOffset
+ */
+static addData(builder:flatbuffers.Builder, dataOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, dataOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param Array.<number> data
+ * @returns flatbuffers.Offset
+ */
+static createDataVector(builder:flatbuffers.Builder, data:number[] | Uint8Array):flatbuffers.Offset {
+  builder.startVector(1, data.length, 1);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addInt8(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number numElems
+ */
+static startDataVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(1, numElems, 1);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endDnsTXTData(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class DnsTXT {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns DnsTXT
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):DnsTXT {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param DnsTXT= obj
+ * @returns DnsTXT
+ */
+static getRootAsDnsTXT(bb:flatbuffers.ByteBuffer, obj?:DnsTXT):DnsTXT {
+  return (obj || new DnsTXT).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param number index
+ * @param DnsTXTData= obj
+ * @returns DnsTXTData
+ */
+data(index: number, obj?:DnsTXTData):DnsTXTData|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? (obj || new DnsTXTData).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+};
+
+/**
+ * @returns number
+ */
+dataLength():number {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startDnsTXT(builder:flatbuffers.Builder) {
+  builder.startObject(1);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset dataOffset
+ */
+static addData(builder:flatbuffers.Builder, dataOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, dataOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param Array.<flatbuffers.Offset> data
+ * @returns flatbuffers.Offset
+ */
+static createDataVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addOffset(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number numElems
+ */
+static startDataVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(4, numElems, 4);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endDnsTXT(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class DnsRequest {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns DnsRequest
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):DnsRequest {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param DnsRequest= obj
+ * @returns DnsRequest
+ */
+static getRootAsDnsRequest(bb:flatbuffers.ByteBuffer, obj?:DnsRequest):DnsRequest {
+  return (obj || new DnsRequest).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @returns number
+ */
+id():number {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_id(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint16(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns DnsMessageType
+ */
+type():DnsMessageType {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : DnsMessageType.Query;
+};
+
+/**
+ * @param DnsMessageType value
+ * @returns boolean
+ */
+mutate_type(value:DnsMessageType):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param number index
+ * @param DnsQuery= obj
+ * @returns DnsQuery
+ */
+queries(index: number, obj?:DnsQuery):DnsQuery|null {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? (obj || new DnsQuery).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+};
+
+/**
+ * @returns number
+ */
+queriesLength():number {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startDnsRequest(builder:flatbuffers.Builder) {
+  builder.startObject(3);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number id
+ */
+static addId(builder:flatbuffers.Builder, id:number) {
+  builder.addFieldInt16(0, id, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param DnsMessageType type
+ */
+static addType(builder:flatbuffers.Builder, type:DnsMessageType) {
+  builder.addFieldInt8(1, type, DnsMessageType.Query);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset queriesOffset
+ */
+static addQueries(builder:flatbuffers.Builder, queriesOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(2, queriesOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param Array.<flatbuffers.Offset> data
+ * @returns flatbuffers.Offset
+ */
+static createQueriesVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addOffset(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number numElems
+ */
+static startQueriesVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(4, numElems, 4);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endDnsRequest(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class DnsQuery {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns DnsQuery
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):DnsQuery {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param DnsQuery= obj
+ * @returns DnsQuery
+ */
+static getRootAsDnsQuery(bb:flatbuffers.ByteBuffer, obj?:DnsQuery):DnsQuery {
+  return (obj || new DnsQuery).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param flatbuffers.Encoding= optionalEncoding
+ * @returns string|Uint8Array|null
+ */
+name():string|null
+name(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+name(optionalEncoding?:any):string|Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+};
+
+/**
+ * @returns DnsRecordType
+ */
+type():DnsRecordType {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : DnsRecordType.A;
+};
+
+/**
+ * @param DnsRecordType value
+ * @returns boolean
+ */
+mutate_type(value:DnsRecordType):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns DnsClass
+ */
+dnsClass():DnsClass {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : DnsClass.IN;
+};
+
+/**
+ * @param DnsClass value
+ * @returns boolean
+ */
+mutate_dns_class(value:DnsClass):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startDnsQuery(builder:flatbuffers.Builder) {
+  builder.startObject(3);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset nameOffset
+ */
+static addName(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, nameOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param DnsRecordType type
+ */
+static addType(builder:flatbuffers.Builder, type:DnsRecordType) {
+  builder.addFieldInt8(1, type, DnsRecordType.A);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param DnsClass dnsClass
+ */
+static addDnsClass(builder:flatbuffers.Builder, dnsClass:DnsClass) {
+  builder.addFieldInt8(2, dnsClass, DnsClass.IN);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endDnsQuery(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class DnsRecord {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns DnsRecord
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):DnsRecord {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param DnsRecord= obj
+ * @returns DnsRecord
+ */
+static getRootAsDnsRecord(bb:flatbuffers.ByteBuffer, obj?:DnsRecord):DnsRecord {
+  return (obj || new DnsRecord).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @param flatbuffers.Encoding= optionalEncoding
+ * @returns string|Uint8Array|null
+ */
+name():string|null
+name(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+name(optionalEncoding?:any):string|Uint8Array|null {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+};
+
+/**
+ * @returns DnsRecordType
+ */
+type():DnsRecordType {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : DnsRecordType.A;
+};
+
+/**
+ * @param DnsRecordType value
+ * @returns boolean
+ */
+mutate_type(value:DnsRecordType):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns DnsRecordData
+ */
+rdataType():DnsRecordData {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? /**  */ (this.bb!.readUint8(this.bb_pos + offset)) : DnsRecordData.NONE;
+};
+
+/**
+ * @param DnsRecordData value
+ * @returns boolean
+ */
+mutate_rdata_type(value:DnsRecordData):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param flatbuffers.Table obj
+ * @returns ?flatbuffers.Table
+ */
+rdata<T extends flatbuffers.Table>(obj:T):T|null {
+  var offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? this.bb!.__union(obj, this.bb_pos + offset) : null;
+};
+
+/**
+ * @returns DnsClass
+ */
+dnsClass():DnsClass {
+  var offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : DnsClass.IN;
+};
+
+/**
+ * @param DnsClass value
+ * @returns boolean
+ */
+mutate_dns_class(value:DnsClass):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 12);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns number
+ */
+ttl():number {
+  var offset = this.bb!.__offset(this.bb_pos, 14);
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_ttl(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 14);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint32(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startDnsRecord(builder:flatbuffers.Builder) {
+  builder.startObject(6);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset nameOffset
+ */
+static addName(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, nameOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param DnsRecordType type
+ */
+static addType(builder:flatbuffers.Builder, type:DnsRecordType) {
+  builder.addFieldInt8(1, type, DnsRecordType.A);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param DnsRecordData rdataType
+ */
+static addRdataType(builder:flatbuffers.Builder, rdataType:DnsRecordData) {
+  builder.addFieldInt8(2, rdataType, DnsRecordData.NONE);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset rdataOffset
+ */
+static addRdata(builder:flatbuffers.Builder, rdataOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(3, rdataOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param DnsClass dnsClass
+ */
+static addDnsClass(builder:flatbuffers.Builder, dnsClass:DnsClass) {
+  builder.addFieldInt8(4, dnsClass, DnsClass.IN);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number ttl
+ */
+static addTtl(builder:flatbuffers.Builder, ttl:number) {
+  builder.addFieldInt32(5, ttl, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endDnsRecord(builder:flatbuffers.Builder):flatbuffers.Offset {
+  var offset = builder.endObject();
+  return offset;
+};
+
+}
+/**
+ * @constructor
+ */
+export class DnsResponse {
+  bb: flatbuffers.ByteBuffer|null = null;
+
+  bb_pos:number = 0;
+/**
+ * @param number i
+ * @param flatbuffers.ByteBuffer bb
+ * @returns DnsResponse
+ */
+__init(i:number, bb:flatbuffers.ByteBuffer):DnsResponse {
+  this.bb_pos = i;
+  this.bb = bb;
+  return this;
+};
+
+/**
+ * @param flatbuffers.ByteBuffer bb
+ * @param DnsResponse= obj
+ * @returns DnsResponse
+ */
+static getRootAsDnsResponse(bb:flatbuffers.ByteBuffer, obj?:DnsResponse):DnsResponse {
+  return (obj || new DnsResponse).__init(bb.readInt32(bb.position()) + bb.position(), bb);
+};
+
+/**
+ * @returns number
+ */
+id():number {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number value
+ * @returns boolean
+ */
+mutate_id(value:number):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint16(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns DnsOpCode
+ */
+opCode():DnsOpCode {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : DnsOpCode.Query;
+};
+
+/**
+ * @param DnsOpCode value
+ * @returns boolean
+ */
+mutate_op_code(value:DnsOpCode):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 6);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns DnsMessageType
+ */
+type():DnsMessageType {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : DnsMessageType.Query;
+};
+
+/**
+ * @param DnsMessageType value
+ * @returns boolean
+ */
+mutate_type(value:DnsMessageType):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @returns boolean
+ */
+authoritative():boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 10);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+};
+
+/**
+ * @param boolean value
+ * @returns boolean
+ */
+mutate_authoritative(value:boolean):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 10);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, +value);
+  return true;
+};
+
+/**
+ * @returns boolean
+ */
+truncated():boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 12);
+  return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+};
+
+/**
+ * @param boolean value
+ * @returns boolean
+ */
+mutate_truncated(value:boolean):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 12);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, +value);
+  return true;
+};
+
+/**
+ * @returns DnsResponseCode
+ */
+responseCode():DnsResponseCode {
+  var offset = this.bb!.__offset(this.bb_pos, 14);
+  return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : DnsResponseCode.NoError;
+};
+
+/**
+ * @param DnsResponseCode value
+ * @returns boolean
+ */
+mutate_response_code(value:DnsResponseCode):boolean {
+  var offset = this.bb!.__offset(this.bb_pos, 14);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, value);
+  return true;
+};
+
+/**
+ * @param number index
+ * @param DnsRecord= obj
+ * @returns DnsRecord
+ */
+answers(index: number, obj?:DnsRecord):DnsRecord|null {
+  var offset = this.bb!.__offset(this.bb_pos, 16);
+  return offset ? (obj || new DnsRecord).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+};
+
+/**
+ * @returns number
+ */
+answersLength():number {
+  var offset = this.bb!.__offset(this.bb_pos, 16);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param number index
+ * @param DnsQuery= obj
+ * @returns DnsQuery
+ */
+queries(index: number, obj?:DnsQuery):DnsQuery|null {
+  var offset = this.bb!.__offset(this.bb_pos, 18);
+  return offset ? (obj || new DnsQuery).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+};
+
+/**
+ * @returns number
+ */
+queriesLength():number {
+  var offset = this.bb!.__offset(this.bb_pos, 18);
+  return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ */
+static startDnsResponse(builder:flatbuffers.Builder) {
+  builder.startObject(8);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number id
+ */
+static addId(builder:flatbuffers.Builder, id:number) {
+  builder.addFieldInt16(0, id, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param DnsOpCode opCode
+ */
+static addOpCode(builder:flatbuffers.Builder, opCode:DnsOpCode) {
+  builder.addFieldInt8(1, opCode, DnsOpCode.Query);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param DnsMessageType type
+ */
+static addType(builder:flatbuffers.Builder, type:DnsMessageType) {
+  builder.addFieldInt8(2, type, DnsMessageType.Query);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param boolean authoritative
+ */
+static addAuthoritative(builder:flatbuffers.Builder, authoritative:boolean) {
+  builder.addFieldInt8(3, +authoritative, +false);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param boolean truncated
+ */
+static addTruncated(builder:flatbuffers.Builder, truncated:boolean) {
+  builder.addFieldInt8(4, +truncated, +false);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param DnsResponseCode responseCode
+ */
+static addResponseCode(builder:flatbuffers.Builder, responseCode:DnsResponseCode) {
+  builder.addFieldInt8(5, responseCode, DnsResponseCode.NoError);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset answersOffset
+ */
+static addAnswers(builder:flatbuffers.Builder, answersOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(6, answersOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param Array.<flatbuffers.Offset> data
+ * @returns flatbuffers.Offset
+ */
+static createAnswersVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addOffset(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number numElems
+ */
+static startAnswersVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(4, numElems, 4);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param flatbuffers.Offset queriesOffset
+ */
+static addQueries(builder:flatbuffers.Builder, queriesOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(7, queriesOffset, 0);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param Array.<flatbuffers.Offset> data
+ * @returns flatbuffers.Offset
+ */
+static createQueriesVector(builder:flatbuffers.Builder, data:flatbuffers.Offset[]):flatbuffers.Offset {
+  builder.startVector(4, data.length, 4);
+  for (var i = data.length - 1; i >= 0; i--) {
+    builder.addOffset(data[i]);
+  }
+  return builder.endVector();
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @param number numElems
+ */
+static startQueriesVector(builder:flatbuffers.Builder, numElems:number) {
+  builder.startVector(4, numElems, 4);
+};
+
+/**
+ * @param flatbuffers.Builder builder
+ * @returns flatbuffers.Offset
+ */
+static endDnsResponse(builder:flatbuffers.Builder):flatbuffers.Offset {
   var offset = builder.endObject();
   return offset;
 };
