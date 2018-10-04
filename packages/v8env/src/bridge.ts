@@ -12,6 +12,7 @@ import { FlyRequest } from "./request";
 import { Response, ResponseInit } from "./dom_types";
 import { FlyResponse } from "./response";
 import { ReadableStream, ReadableStreamSource, StreamStrategy } from "@stardazed/streams";
+import { DNSRequest, DNSQuery, DNSResponse } from './dns';
 
 let nextCmdId = 1; // 0 is for events
 const promiseTable = new Map<number, util.Resolvable<fbs.Base>>();
@@ -67,6 +68,8 @@ function handleBody(base: fbs.Base, raw: Uint8Array) {
     enqueuer(msg, raw)
 }
 
+export type DNSResponseFn = () => DNSResponse | Promise<DNSResponse>
+
 export function addEventListener(name: string, fn: Function) {
   switch (name) {
     case "fetch":
@@ -116,7 +119,104 @@ export function addEventListener(name: string, fn: Function) {
           }
         })
       })
+      break;
+
+    case "resolv":
+      listenerTable.set(fbs.Any.DnsRequest, function (base: fbs.Base) {
+        let msg = new fbs.DnsRequest();
+        base.msg(msg);
+        let id = msg.id();
+
+        let queries: DNSQuery[] = [];
+        for (let i = 0; i < msg.queriesLength(); i++) {
+          const q = msg.queries(i);
+          queries.push({
+            name: q.name(),
+            dnsClass: q.dnsClass(),
+            rrType: q.rrType()
+          })
+        }
+
+        let req: DNSRequest = {
+          messageType: msg.messageType(),
+          queries: queries
+        }
+
+        fn.call(window, {
+          request: req,
+          respondWith(resfn: any) {//DNSResponse | Promise<DNSResponse> | DNSResponseFn) {
+            let ret = resfn;
+            if (typeof ret === "function") {
+              ret = resfn()
+            }
+            if (ret instanceof Promise) {
+              ret.then(handleDNSRes.bind(null, id)).catch(handleDNSError.bind(null, id))
+            } else if (typeof ret === 'object') {
+              handleDNSRes(id, ret)
+            }
+          }
+        })
+      })
+      break;
   }
+}
+
+function handleDNSError(id: number, err: Error) {
+  console.error("dns error:", err.stack);
+  const fbb = new flatbuffers.Builder();
+
+  fbs.DnsResponse.startDnsResponse(fbb);
+  fbs.DnsResponse.addId(fbb, id);
+  fbs.DnsResponse.addOpCode(fbb, fbs.DnsOpCode.Query)
+  fbs.DnsResponse.addMessageType(fbb, fbs.DnsMessageType.Response)
+  fbs.DnsResponse.addResponseCode(fbb, fbs.DnsResponseCode.ServFail)
+  fbs.DnsResponse.addAuthoritative(fbb, true)
+
+  sendAsync(fbb, fbs.Any.DnsResponse, fbs.DnsResponse.endDnsResponse(fbb));
+}
+
+function handleDNSRes(id: number, res: DNSResponse) {
+  const fbb = new flatbuffers.Builder();
+
+  let answers: number[] = []
+  for (let i = 0; i < res.answers.length; i++) {
+    const ans = res.answers[i];
+    let rdata: flatbuffers.Offset;
+    let rdataType: fbs.DnsRecordData;
+    switch (ans.rrType) {
+      case fbs.DnsRecordType.A: {
+        rdataType = fbs.DnsRecordData.DnsA
+        const ip = fbb.createString(ans.data)
+        fbs.DnsA.startDnsA(fbb)
+        fbs.DnsA.addIp(fbb, ip)
+        rdata = fbs.DnsA.endDnsA(fbb)
+        break;
+      }
+      default:
+        throw new Error("unhandled record type: " + fbs.DnsRecordType[ans.rrType])
+    }
+
+    const name = fbb.createString(ans.name);
+    fbs.DnsRecord.startDnsRecord(fbb);
+    fbs.DnsRecord.addName(fbb, name);
+    fbs.DnsRecord.addRdataType(fbb, rdataType);
+    fbs.DnsRecord.addRdata(fbb, rdata);
+    fbs.DnsRecord.addRrType(fbb, ans.rrType);
+    fbs.DnsRecord.addTtl(fbb, ans.ttl);
+    answers[i] = fbs.DnsRecord.endDnsRecord(fbb);
+  }
+  const answersOffset = fbs.DnsResponse.createAnswersVector(fbb, answers);
+
+  fbs.DnsResponse.startDnsResponse(fbb);
+  fbs.DnsResponse.addId(fbb, id);
+  fbs.DnsResponse.addOpCode(fbb, fbs.DnsOpCode.Query) // override
+  fbs.DnsResponse.addMessageType(fbb, fbs.DnsMessageType.Response) // override
+  if (res.responseCode > 0)
+    fbs.DnsResponse.addResponseCode(fbb, res.responseCode)
+  fbs.DnsResponse.addAuthoritative(fbb, !!res.authoritative)
+  fbs.DnsResponse.addTruncated(fbb, !!res.truncated)
+  fbs.DnsResponse.addAnswers(fbb, answersOffset);
+  sendAsync(fbb, fbs.Any.DnsResponse, fbs.DnsResponse.endDnsResponse(fbb));
 }
 
 function handleError(id: number, err: Error) {

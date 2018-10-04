@@ -3,12 +3,13 @@ import * as errors from "./errors";
 import * as util from "./util";
 import { flatbuffers } from "flatbuffers"
 import { sendAsync } from "./bridge";
+import { DNSQuery, DNSResponse, DNSRecord, DNSRecordData } from "./dns";
 
 export function resolv(req: DNSQuery | string): Promise<DNSResponse> {
   let query: DNSQuery = typeof req === "string" ? {
     name: req,
-    type: fbs.DnsRecordType.A,
-    dns_class: fbs.DnsClass.IN
+    rrType: fbs.DnsRecordType.A,
+    dnsClass: fbs.DnsClass.IN
   } : req
 
   return new Promise(function resolvPromise(resolve, reject) {
@@ -16,8 +17,8 @@ export function resolv(req: DNSQuery | string): Promise<DNSResponse> {
     const nameStr = fbb.createString(query.name)
     fbs.DnsQuery.startDnsQuery(fbb);
     fbs.DnsQuery.addName(fbb, nameStr);
-    fbs.DnsQuery.addDnsClass(fbb, query.dns_class);
-    fbs.DnsQuery.addType(fbb, query.type);
+    fbs.DnsQuery.addDnsClass(fbb, query.dnsClass);
+    fbs.DnsQuery.addRrType(fbb, query.rrType);
     sendAsync(fbb, fbs.Any.DnsQuery, fbs.DnsQuery.endDnsQuery(fbb)).then(baseRes => {
       console.log("hello from resolv response")
       let msg = new fbs.DnsResponse()
@@ -52,66 +53,19 @@ export function resolv(req: DNSQuery | string): Promise<DNSResponse> {
         }
         answers.push({
           name: ans.name(),
-          type: ans.type(),
-          dns_class: ans.dnsClass(),
+          rrType: ans.rrType(),
+          dnsClass: ans.dnsClass(),
           ttl: ans.ttl(),
           data: data,
         })
       }
       resolve({
-        id: msg.id(),
-        opCode: msg.opCode(),
-        type: msg.type(),
         authoritative: msg.authoritative(),
+        truncated: msg.truncated(),
         responseCode: msg.responseCode(),
+        queries: [query],
         answers: answers
       })
     }).catch(reject)
   })
-}
-
-export type DNSClass = fbs.DnsClass
-
-export type DNSRecordType = fbs.DnsRecordType
-
-export interface DNSQuery {
-  name: string,
-  dns_class: DNSClass,
-  type: DNSRecordType,
-}
-
-export type DNSMessageType = fbs.DnsMessageType
-
-export type DNSOpCode = fbs.DnsOpCode
-
-export type DNSResponseCode = fbs.DnsResponseCode
-
-export interface DNSMessage {
-  id: number,
-  type: DNSMessageType,
-  op_code: DNSOpCode,
-  authoritative: boolean,
-  truncated: boolean,
-  response_code: DNSResponseCode,
-  queries: DNSQuery[],
-  answers: DNSRecord[],
-}
-
-export type DNSRecordData = string
-
-export interface DNSRecord {
-  name: string,
-  type: DNSRecordType,
-  dns_class: DNSClass,
-  ttl: number,
-  data: DNSRecordData,
-}
-
-export interface DNSResponse {
-  id: number,
-  opCode: DNSOpCode,
-  type: DNSMessageType,
-  authoritative: boolean,
-  responseCode: DNSResponseCode,
-  answers: DNSRecord[]
 }

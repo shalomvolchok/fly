@@ -3896,7 +3896,7 @@ static getRootAsDnsRequest(bb:flatbuffers.ByteBuffer, obj?:DnsRequest):DnsReques
  */
 id():number {
   var offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
 };
 
 /**
@@ -3910,14 +3910,14 @@ mutate_id(value:number):boolean {
     return false;
   }
 
-  this.bb!.writeUint16(this.bb_pos + offset, value);
+  this.bb!.writeUint32(this.bb_pos + offset, value);
   return true;
 };
 
 /**
  * @returns DnsMessageType
  */
-type():DnsMessageType {
+messageType():DnsMessageType {
   var offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : DnsMessageType.Query;
 };
@@ -3926,7 +3926,7 @@ type():DnsMessageType {
  * @param DnsMessageType value
  * @returns boolean
  */
-mutate_type(value:DnsMessageType):boolean {
+mutate_message_type(value:DnsMessageType):boolean {
   var offset = this.bb!.__offset(this.bb_pos, 6);
 
   if (offset === 0) {
@@ -3967,15 +3967,15 @@ static startDnsRequest(builder:flatbuffers.Builder) {
  * @param number id
  */
 static addId(builder:flatbuffers.Builder, id:number) {
-  builder.addFieldInt16(0, id, 0);
+  builder.addFieldInt32(0, id, 0);
 };
 
 /**
  * @param flatbuffers.Builder builder
- * @param DnsMessageType type
+ * @param DnsMessageType messageType
  */
-static addType(builder:flatbuffers.Builder, type:DnsMessageType) {
-  builder.addFieldInt8(1, type, DnsMessageType.Query);
+static addMessageType(builder:flatbuffers.Builder, messageType:DnsMessageType) {
+  builder.addFieldInt8(1, messageType, DnsMessageType.Query);
 };
 
 /**
@@ -4058,7 +4058,7 @@ name(optionalEncoding?:any):string|Uint8Array|null {
 /**
  * @returns DnsRecordType
  */
-type():DnsRecordType {
+rrType():DnsRecordType {
   var offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : DnsRecordType.A;
 };
@@ -4067,7 +4067,7 @@ type():DnsRecordType {
  * @param DnsRecordType value
  * @returns boolean
  */
-mutate_type(value:DnsRecordType):boolean {
+mutate_rr_type(value:DnsRecordType):boolean {
   var offset = this.bb!.__offset(this.bb_pos, 6);
 
   if (offset === 0) {
@@ -4118,10 +4118,10 @@ static addName(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset) {
 
 /**
  * @param flatbuffers.Builder builder
- * @param DnsRecordType type
+ * @param DnsRecordType rrType
  */
-static addType(builder:flatbuffers.Builder, type:DnsRecordType) {
-  builder.addFieldInt8(1, type, DnsRecordType.A);
+static addRrType(builder:flatbuffers.Builder, rrType:DnsRecordType) {
+  builder.addFieldInt8(1, rrType, DnsRecordType.A);
 };
 
 /**
@@ -4183,7 +4183,7 @@ name(optionalEncoding?:any):string|Uint8Array|null {
 /**
  * @returns DnsRecordType
  */
-type():DnsRecordType {
+rrType():DnsRecordType {
   var offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : DnsRecordType.A;
 };
@@ -4192,7 +4192,7 @@ type():DnsRecordType {
  * @param DnsRecordType value
  * @returns boolean
  */
-mutate_type(value:DnsRecordType):boolean {
+mutate_rr_type(value:DnsRecordType):boolean {
   var offset = this.bb!.__offset(this.bb_pos, 6);
 
   if (offset === 0) {
@@ -4298,10 +4298,10 @@ static addName(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset) {
 
 /**
  * @param flatbuffers.Builder builder
- * @param DnsRecordType type
+ * @param DnsRecordType rrType
  */
-static addType(builder:flatbuffers.Builder, type:DnsRecordType) {
-  builder.addFieldInt8(1, type, DnsRecordType.A);
+static addRrType(builder:flatbuffers.Builder, rrType:DnsRecordType) {
+  builder.addFieldInt8(1, rrType, DnsRecordType.A);
 };
 
 /**
@@ -4378,7 +4378,7 @@ static getRootAsDnsResponse(bb:flatbuffers.ByteBuffer, obj?:DnsResponse):DnsResp
  */
 id():number {
   var offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+  return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
 };
 
 /**
@@ -4392,7 +4392,7 @@ mutate_id(value:number):boolean {
     return false;
   }
 
-  this.bb!.writeUint16(this.bb_pos + offset, value);
+  this.bb!.writeUint32(this.bb_pos + offset, value);
   return true;
 };
 
@@ -4422,7 +4422,7 @@ mutate_op_code(value:DnsOpCode):boolean {
 /**
  * @returns DnsMessageType
  */
-type():DnsMessageType {
+messageType():DnsMessageType {
   var offset = this.bb!.__offset(this.bb_pos, 8);
   return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : DnsMessageType.Query;
 };
@@ -4431,7 +4431,7 @@ type():DnsMessageType {
  * @param DnsMessageType value
  * @returns boolean
  */
-mutate_type(value:DnsMessageType):boolean {
+mutate_message_type(value:DnsMessageType):boolean {
   var offset = this.bb!.__offset(this.bb_pos, 8);
 
   if (offset === 0) {
@@ -4559,7 +4559,7 @@ static startDnsResponse(builder:flatbuffers.Builder) {
  * @param number id
  */
 static addId(builder:flatbuffers.Builder, id:number) {
-  builder.addFieldInt16(0, id, 0);
+  builder.addFieldInt32(0, id, 0);
 };
 
 /**
@@ -4572,10 +4572,10 @@ static addOpCode(builder:flatbuffers.Builder, opCode:DnsOpCode) {
 
 /**
  * @param flatbuffers.Builder builder
- * @param DnsMessageType type
+ * @param DnsMessageType messageType
  */
-static addType(builder:flatbuffers.Builder, type:DnsMessageType) {
-  builder.addFieldInt8(2, type, DnsMessageType.Query);
+static addMessageType(builder:flatbuffers.Builder, messageType:DnsMessageType) {
+  builder.addFieldInt8(2, messageType, DnsMessageType.Query);
 };
 
 /**
