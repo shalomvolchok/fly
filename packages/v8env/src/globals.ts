@@ -10,6 +10,8 @@ import * as bridge from "./bridge";
 import * as textEncoding from "./text-encoding";
 import { FlyResponse } from "./response";
 import * as fetch_ from './fetch';
+import * as resolv_ from './resolv';
+import * as dns from './dns';
 import * as crypto_ from "./crypto";
 import cache_ from "./cache";
 
@@ -51,6 +53,13 @@ declare global {
 
   // TODO: remove
   let flyData: typeof data;
+
+  const resolv: typeof resolv_.resolv;
+  const DNSClass: typeof dns.DNSClass;
+  const DNSRecordType: typeof dns.DNSRecordType;
+  const DNSMessageType: typeof dns.DNSMessageType;
+  const DNSOpCode: typeof dns.DNSOpCode;
+  const DNSResponseCode: typeof dns.DNSResponseCode;
 }
 
 // A reference to the global object.
@@ -75,7 +84,14 @@ window.URL = url.URL;
 window.URLSearchParams = url.URLSearchParams;
 
 window.fetch = fetch_.fetch;
+window.resolv = resolv_.resolv;
 window.crypto = crypto_.crypto;
 window.cache = cache_;
 
 window.flyData = data;
+
+window.DNSClass = dns.DNSClass;
+window.DNSRecordType = dns.DNSRecordType;
+window.DNSMessageType = dns.DNSMessageType;
+window.DNSOpCode = dns.DNSOpCode;
+window.DNSResponseCode = dns.DNSResponseCode;
