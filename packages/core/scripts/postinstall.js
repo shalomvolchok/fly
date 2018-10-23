@@ -24,6 +24,8 @@ const tar = require('tar-stream'); // got that from tar-fs
 try {
   fs.mkdirSync("bin")
 } catch(e) {} // this can fail silently
+
+console.log(`Downloading fly-dns for ${platform} ${os.arch()}...`)
 axios.get(url, {responseType:'stream'}).then(function(response) {
   const extract = tar.extract();
 
