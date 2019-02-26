@@ -30,6 +30,7 @@ import { setTimeout, setImmediate, clearTimeout, setInterval, clearInterval } fr
 import { Document, Element } from "./document"
 
 import { MiddlewareChain } from "./middleware"
+import { hashCode } from "./hash-code"
 
 global.middleware = {}
 
@@ -72,7 +73,8 @@ global.bootstrap = function bootstrap() {
     cache,
     crypto,
     TimeoutError,
-    MiddlewareChain // ugh
+    MiddlewareChain, // ugh
+    hashCode
   })
 
   // Events
