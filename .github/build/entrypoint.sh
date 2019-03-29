@@ -9,3 +9,5 @@ yarn install --no-progress && yarn bootstrap
 
 echo "build"
 yarn build && yarn bundle
+
+echo "a'"
