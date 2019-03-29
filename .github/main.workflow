@@ -1,8 +1,8 @@
 workflow "Publish" {
   on = "push"
-  resolves = ["Build"]
+  resolves = ["build"]
 }
 
-action "Build" {
-  uses = "./build/"
+action "build" {
+  uses = "./.github/build/"
 }
