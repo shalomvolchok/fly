@@ -6,3 +6,8 @@ workflow "Publish" {
 action "build" {
   uses = "./.github/build/"
 }
+
+action "version" {
+  uses = "./.github/version/"
+  
+}
