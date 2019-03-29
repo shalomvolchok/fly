@@ -1,4 +1,4 @@
-FROM node:11.10
+FROM node
 
 LABEL "com.github.actions.name"="Build"
 LABEL "com.github.actions.description"="Configure and build"
